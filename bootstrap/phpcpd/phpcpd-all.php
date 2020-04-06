@@ -1,8 +1,8 @@
 <?php
 
-use Phpcq\Config\BuildConfigInterface;
-use Phpcq\Plugin\Config\ConfigOptionsBuilderInterface;
-use Phpcq\Plugin\ConfigurationPluginInterface;
+use Phpcq\PluginApi\Version10\BuildConfigInterface;
+use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
+use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
 
 /**
  * Tool home: https://github.com/sebastianbergmann/phpcpd
@@ -13,7 +13,7 @@ return new class implements ConfigurationPluginInterface {
         return 'phpcpd';
     }
 
-    public function describeOptions(ConfigOptionsBuilderInterface $configOptionsBuilder) : void
+    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder) : void
     {
         $configOptionsBuilder->describeArrayOption(
             'names',

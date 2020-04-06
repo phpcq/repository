@@ -1,0 +1,28 @@
+{
+  "name": "phpcq/bootstrap-library",
+  "description": "Bootstrap library for phpcq.",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Christian Schiffler",
+      "email": "c.schiffler@cyberspectrum.de",
+      "homepage": "http://cyberspectrum.de",
+      "role": "lead"
+    },
+    {
+      "name": "David Molineus",
+      "email": "david.molineus@netzmacht.de",
+      "homepage": "https://netzmacht.de",
+      "role": "lead"
+    },
+    {
+      "name": "Stefan Heimes",
+      "email": "stefan_heimes@hotmail.com",
+      "role": "lead"
+    }
+  ],
+  "require": {
+    "php": "^7.3",
+    "phpcq/plugin-api": "^1.0.0@dev"
+  }
+}

@@ -1,8 +1,8 @@
 <?php
 
-use Phpcq\Config\BuildConfigInterface;
-use Phpcq\Plugin\Config\ConfigOptionsBuilderInterface;
-use Phpcq\Plugin\ConfigurationPluginInterface;
+use Phpcq\PluginApi\Version10\BuildConfigInterface;
+use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
+use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
 
 return new class implements ConfigurationPluginInterface {
     public function getName() : string
@@ -10,7 +10,7 @@ return new class implements ConfigurationPluginInterface {
         return 'composer-require-checker';
     }
 
-    public function describeOptions(ConfigOptionsBuilderInterface $configOptionsBuilder) : void
+    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder) : void
     {
         $configOptionsBuilder
             ->describeStringOption('config_file', 'Path to configuration file')
