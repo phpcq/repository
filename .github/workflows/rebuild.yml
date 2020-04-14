@@ -37,7 +37,7 @@ jobs:
 
       - name: Commit changes
         working-directory: './repository'
-        run 'git commit -m "Update repository after pushing changes"'
+        run: 'git commit -m "Update repository after pushing changes"'
 
       - name: Push changes
         uses: ad-m/github-push-action@master
