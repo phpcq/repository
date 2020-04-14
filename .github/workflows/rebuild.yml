@@ -11,7 +11,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Pull source
+        uses: actions/checkout@v2
+
+      - name: Install repository-builder
+        uses: actions/checkout@v2
         with:
           repository: 'phpcq/repository-builder'
           path: './builder'
@@ -20,7 +24,8 @@ jobs:
         run: composer install
         working-directory: './builder'
 
-      - uses: actions/checkout@v2
+      - name: Checkout target directory
+        uses: actions/checkout@v2
         with:
           ref: 'gh-pages-test'
           path: './web'
