@@ -33,7 +33,7 @@ jobs:
       - name: Rebuild repository
         run: './builder/bin/console phpcq:rebuild'
         env:
-          - GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Add repository
         working-directory: './web'
