@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          repository: 'git@github.com:phpcq/repository-builder.git'
+          repository: 'phpcq/repository-builder'
           path: './builder'
 
       - name: Install dependencies
