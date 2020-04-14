@@ -23,22 +23,17 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: 'gh-pages-test'
-          path: './repository'
+          path: './web'
 
       - name: Rebuild repository
-        run: '../builder/bin/console phpcq:rebuild'
-        working-directory: './repository'
+        run: './builder/bin/console phpcq:rebuild'
 
       - name: Add repository
-        working-directory: './repository'
-        run: 'git add repository.json'
-
-      - name: Add repository
-        working-directory: './repository'
+        working-directory: './web'
         run: 'git add repository.json'
 
       - name: Commit changes
-        working-directory: './repository'
+        working-directory: './web'
         run: 'git commit -m "Update repository after pushing changes"'
 
       - name: Push changes
@@ -46,4 +41,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: 'gh-pages-test'
-          directory: './repository'
+          directory: './web'
