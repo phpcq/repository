@@ -1,0 +1,47 @@
+name: Rebuild repository
+
+on:
+  # FIXME: Change to master since ready
+  push: feature/github-action
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: 'git@github.com:phpcq/repository-builder.git'
+          path: './builder'
+
+      - name: Install dependencies
+        run: composer install
+        working-directory: './builder'
+
+      - uses: actions/checkout@v2
+        with:
+          ref: 'gh-pages-test'
+          path: './repository'
+
+      - name: Rebuild repository
+        run: '../builder/bin/console phpcq:rebuild'
+        working-directory: './repository'
+
+      - name: Add repository
+        working-directory: './repository'
+        run: 'git add repository.json'
+
+      - name: Add repository
+        working-directory: './repository'
+        run: 'git add repository.json'
+
+      - name: Commit changes
+        working-directory: './repository'
+        run 'git commit -m "Update repository after pushing changes"'
+
+      - name: Push changes
+      - uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: 'gh-pages-test'
+          directory: './repository'
