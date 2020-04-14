@@ -2,7 +2,9 @@ name: Rebuild repository
 
 on:
   # FIXME: Change to master since ready
-  push: feature/github-action
+  push:
+    branches:
+      - 'feature/github-action'
 
 jobs:
   build:
