@@ -20,9 +20,14 @@ return new class implements ConfigurationPluginInterface {
 
     public function processConfig(array $config, BuildConfigInterface $buildConfig) : iterable
     {
+        $args = [];
+        if ('' !== ($values = $config['custom_flags'] ?? '')) {
+            $args[] = $values;
+        }
+
         yield $buildConfig
             ->getTaskFactory()
-            ->buildRunPhar('phpunit')
+            ->buildRunPhar('phpunit', $args)
             ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
             ->build();
     }

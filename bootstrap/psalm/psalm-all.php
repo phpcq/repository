@@ -51,6 +51,10 @@ return new class implements ConfigurationPluginInterface {
             }
         }
 
+        if ('' !== ($values = $config['custom_flags'] ?? '')) {
+            $arguments[] = $values;
+        }
+
         return $arguments;
     }
 };
