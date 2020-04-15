@@ -27,7 +27,7 @@ jobs:
           repository: 'phpcq/repository-builder'
           path: ${{ env.BUILDER_DIRECTORY }}
 
-      - name: Cache vendor directory of repository-builder
+      - name: Cache composer cache directory
         uses: actions/cache@v1
         env:
           cache-name: composer-cache
