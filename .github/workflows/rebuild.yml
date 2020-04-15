@@ -35,13 +35,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Add repository
-        working-directory: './web'
-        run: 'git add repository.json'
-
       - name: Commit changes
         working-directory: './web'
-        run: 'git commit -m "Update repository after pushing changes"'
+        run: |
+          git add repository.json
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -m "Update repository after pushing changes"
 
       - name: Push changes
         uses: ad-m/github-push-action@master
