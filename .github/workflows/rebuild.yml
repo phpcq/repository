@@ -68,7 +68,7 @@ jobs:
           commit_message: Update repository
           branch: ${{ env.TARGET_BRANCH }}
           file_pattern: repository.json
-          repository: {{ env.TARGET_DIRECTORY }}
+          repository: ${{ env.TARGET_DIRECTORY }}
           commit_user_name: PHPCQ GitHub Action Bot
           commit_user_email: actions@github.com
           commit_author: GitHub Action <actions@github.com>
