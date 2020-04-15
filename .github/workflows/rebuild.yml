@@ -60,7 +60,7 @@ jobs:
           path: ${{ env.TARGET_DIRECTORY }}
 
       - name: Rebuild repository
-        run: ${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild'
+        run: ${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
