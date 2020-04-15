@@ -30,7 +30,7 @@ jobs:
       - name: Cache composer cache directory
         uses: actions/cache@v1
         env:
-          cache-name: composer-cache
+          cache-name: composer-cache-dir
         with:
           path: ~/.cache/composer
           key: ${{ runner.os }}-build-${{ env.cache-name }}
