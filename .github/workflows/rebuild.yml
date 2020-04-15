@@ -2,7 +2,7 @@ name: Rebuild repository
 
 env:
   TARGET_BRANCH: gh-pages-test
-  TARGET_DIRECTORY: './dir'
+  TARGET_DIRECTORY: './web'
   BUILDER_DIRECTORY: './builder'
 
 on:
@@ -11,7 +11,7 @@ on:
     branches:
       - 'feature/github-action'
   schedule:
-    - cron: '0 0 * * * '
+    - cron: '0 0 * * *'
 
 jobs:
   build:
@@ -43,7 +43,7 @@ jobs:
           cache-name: repository-builder-var
         with:
           path: ${{ env.BUILDER_DIRECTORY }}/var
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('./sources.yaml') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
 
