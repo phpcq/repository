@@ -10,6 +10,9 @@ on:
   push:
     branches:
       - 'feature/github-action'
+  on:
+    schedule:
+      - cron: '0 0 * * * '
 
 jobs:
   build:
@@ -61,16 +64,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.BUILDER_GITHUB_TOKEN }}
 
       - name: Commit changes
-        working-directory: ${{ env.TARGET_DIRECTORY }}
-        run: |
-          git add repository.json
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git commit -m "Update repository after pushing changes"
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
+      - uses: stefanzweifel/git-auto-commit-action@v4.1.2
         with:
-          github_token: ${{ secrets.BUILDER_GITHUB_TOKEN }}
+          commit_message: Update repository
+
           branch: ${{ env.TARGET_BRANCH }}
-          directory: ${{ env.TARGET_DIRECTORY }}
+
+          file_pattern: repository.json
+
+          repository: {{ env.TARGET_DIRECTORY }}
+
+          commit_user_name: PHPCQ GitHub Action Bot
+          commit_user_email: actions@github.com
+          commit_author: GitHub Action <actions@github.com>
