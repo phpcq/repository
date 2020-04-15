@@ -1,5 +1,10 @@
 name: Rebuild repository
 
+env:
+  TARGET_BRANCH: gh-pages-test
+  TARGET_DIRECTORY: './dir'
+  BUILDER_DIRECTORY: './builder'
+
 on:
   # FIXME: Change to master since ready
   push:
@@ -18,25 +23,25 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: 'phpcq/repository-builder'
-          path: './builder'
+          path: ${{ env.BUILDER_DIRECTORY }}
 
       - name: Install dependencies
         run: composer install
-        working-directory: './builder'
+        working-directory: ${{ env.BUILDER_DIRECTORY }}
 
       - name: Checkout target directory
         uses: actions/checkout@v2
         with:
-          ref: 'gh-pages-test'
-          path: './web'
+          ref: ${{ env.TARGET_BRANCH }}
+          path: ${{ env.TARGET_DIRECTORY }}
 
       - name: Rebuild repository
-        run: './builder/bin/console phpcq:rebuild'
+        run: ${{ env.BUILDER_DIRECTORY }} /bin/console phpcq:rebuild'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit changes
-        working-directory: './web'
+        working-directory: ${{ env.TARGET_DIRECTORY }}
         run: |
           git add repository.json
           git config --local user.email "action@github.com"
@@ -47,5 +52,5 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: 'gh-pages-test'
-          directory: './web'
+          branch: ${{ env.TARGET_BRANCH }}
+          directory: ${{ env.TARGET_DIRECTORY }}
