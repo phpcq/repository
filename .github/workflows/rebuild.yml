@@ -30,6 +30,14 @@ jobs:
       - name: Cache vendor directory of repository-builder
         uses: actions/cache@v1
         env:
+          cache-name: composer-cache
+        with:
+          path: ~/.cache/composer
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+
+      - name: Cache vendor directory of repository-builder
+        uses: actions/cache@v1
+        env:
           cache-name: repository-builder-vendor
         with:
           path: ${{ env.BUILDER_DIRECTORY }}/vendor
