@@ -58,7 +58,7 @@ jobs:
       - name: Rebuild repository
         run: ${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BUILDER_GITHUB_TOKEN }}
 
       - name: Commit changes
         working-directory: ${{ env.TARGET_DIRECTORY }}
@@ -71,6 +71,6 @@ jobs:
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.BUILDER_GITHUB_TOKEN }}
           branch: ${{ env.TARGET_BRANCH }}
           directory: ${{ env.TARGET_DIRECTORY }}
