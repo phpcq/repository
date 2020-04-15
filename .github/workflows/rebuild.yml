@@ -25,6 +25,30 @@ jobs:
           repository: 'phpcq/repository-builder'
           path: ${{ env.BUILDER_DIRECTORY }}
 
+      - name: Cache vendor directory of repository-builder
+        uses: actions/cache@v1
+        env:
+          cache-name: repository-builder-vendor
+        with:
+          path: ${{ env.BUILDER_DIRECTORY }}/vendor
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Cache var directory of repository-builder
+        uses: actions/cache@v1
+        env:
+          cache-name: repository-builder-var
+        with:
+          path: ${{ env.BUILDER_DIRECTORY }}/var
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
       - name: Install dependencies
         run: composer install
         working-directory: ${{ env.BUILDER_DIRECTORY }}
