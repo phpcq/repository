@@ -1,0 +1,81 @@
+name: Rebuild repository
+
+env:
+  TARGET_BRANCH: gh-pages
+  TARGET_DIRECTORY: './web'
+  BUILDER_DIRECTORY: './builder'
+
+on:
+  push:
+    branches:
+      - 'master'
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Pull source
+        uses: actions/checkout@v2
+
+      - name: Install repository-builder
+        uses: actions/checkout@v2
+        with:
+          repository: 'phpcq/repository-builder'
+          path: ${{ env.BUILDER_DIRECTORY }}
+
+      - name: Cache composer cache directory
+        uses: actions/cache@v1
+        env:
+          cache-name: composer-cache-dir
+        with:
+          path: ~/.cache/composer
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+
+      - name: Cache vendor directory of repository-builder
+        uses: actions/cache@v1
+        env:
+          cache-name: repository-builder-vendor
+        with:
+          path: ${{ env.BUILDER_DIRECTORY }}/vendor
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+
+      - name: Cache var directory of repository-builder
+        uses: actions/cache@v1
+        env:
+          cache-name: repository-builder-var
+        with:
+          path: ${{ env.BUILDER_DIRECTORY }}/var
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('./sources.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+
+      - name: Install dependencies
+        run: composer install
+        working-directory: ${{ env.BUILDER_DIRECTORY }}
+
+      - name: Checkout target directory
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          path: ${{ env.TARGET_DIRECTORY }}
+
+      - name: Rebuild repository
+        run: ${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild
+        env:
+          GITHUB_TOKEN: ${{ secrets.BUILDER_GITHUB_TOKEN }}
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4.1.2
+        with:
+          commit_message: Update repository
+          branch: ${{ env.TARGET_BRANCH }}
+          file_pattern: repository.json
+          repository: ${{ env.TARGET_DIRECTORY }}
+          commit_user_name: PHP Code Quality Bot
+          commit_user_email: phpcq-bot@users.noreply.github.com
+          commit_author: PHP Code Quality Bot <phpcq-bot@users.noreply.github.com>
