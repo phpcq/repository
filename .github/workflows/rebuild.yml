@@ -6,7 +6,7 @@ env:
   BUILDER_DIRECTORY: './builder'
 
 on:
-  # FIXME: Change to master since ready
+  # FIXME: Change to master
   push:
     branches:
       - 'feature/github-action'
