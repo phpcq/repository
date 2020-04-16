@@ -1,15 +1,14 @@
 name: Rebuild repository
 
 env:
-  TARGET_BRANCH: gh-pages-test
+  TARGET_BRANCH: gh-pages
   TARGET_DIRECTORY: './web'
   BUILDER_DIRECTORY: './builder'
 
 on:
-  # FIXME: Change to master
   push:
     branches:
-      - 'feature/github-action'
+      - 'master'
   schedule:
     - cron: '0 0 * * *'
 
