@@ -41,3 +41,15 @@ repositories:
     type: github
     repository: maglnet/ComposerRequireChecker
     tool_name: composer-require-checker
+
+  phpcs-github:
+    type: github
+    repository: squizlabs/PHP_CodeSniffer
+    tool_name: phpcs
+    allowed_versions: ^3.0 || ^2.0
+
+  phpcbf-github:
+    type: github
+    repository: squizlabs/PHP_CodeSniffer
+    tool_name: phpcbf
+    allowed_versions: ^3.0 || ^2.0

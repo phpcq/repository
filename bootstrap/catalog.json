@@ -40,5 +40,19 @@
       "file": "composer-require-checker/composer-require-checker-all.php",
       "plugin-version": "1.0.0"
     }
+  ],
+  "phpcs": [
+    {
+      "constraint": "*",
+      "file": "phpcs/phpcs-all.php",
+      "plugin-version": "1.0.0"
+    }
+  ],
+  "phpcbf": [
+    {
+      "constraint": "*",
+      "file": "phpcbf/phpcbf-all.php",
+      "plugin-version": "1.0.0"
+    }
   ]
 }
