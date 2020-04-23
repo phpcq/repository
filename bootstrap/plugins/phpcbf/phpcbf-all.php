@@ -5,12 +5,12 @@ use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
 
 return new class implements ConfigurationPluginInterface {
-    public function getName() : string
+    public function getName(): string
     {
         return 'phpcbf';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder) : void
+    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
     {
         $configOptionsBuilder
             ->describeArrayOption('directories', 'The source directories to be fixed with phpcbf.')
@@ -21,10 +21,10 @@ return new class implements ConfigurationPluginInterface {
         $configOptionsBuilder->describeStringOption(
             'custom_flags',
             'Any custom flags to pass to phpcs. For valid flags refer to the cphpcs documentation.',
-            );
+        );
     }
 
-    public function processConfig(array $config, BuildConfigInterface $buildConfig) : iterable
+    public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
     {
         foreach ($config['directories'] as $directory => $directoryConfig) {
             yield $buildConfig
@@ -35,7 +35,7 @@ return new class implements ConfigurationPluginInterface {
         }
     }
 
-    private function buildArguments(string $directory, array $config, BuildConfigInterface $buildConfig) : array
+    private function buildArguments(string $directory, array $config, BuildConfigInterface $buildConfig): array
     {
         $arguments = [];
 
