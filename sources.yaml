@@ -53,3 +53,9 @@ repositories:
     repository: squizlabs/PHP_CodeSniffer
     tool_name: phpcbf
     allowed_versions: ^3.0 || ^2.0
+
+  composer-normalize:
+    type: github
+    repository: ergebnis/composer-normalize
+    tool_name: composer-normalize
+    allowed_versions: ^2.1
