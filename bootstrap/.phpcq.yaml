@@ -3,6 +3,7 @@ phpcq:
     - https://phpcq.github.io/repository/repository.json
   directories:
     - plugins
+    - tests
   artifact: .phpcq/build
   tools:
     phpunit:
