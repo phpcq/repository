@@ -20,7 +20,7 @@ return new class implements ConfigurationPluginInterface {
 
         $configOptionsBuilder->describeStringOption(
             'custom_flags',
-            'Any custom flags to pass to phpcs. For valid flags refer to the cphpcs documentation.',
+            'Any custom flags to pass to phpcbf. For valid flags refer to the cphpcs documentation.',
         );
     }
 
