@@ -64,5 +64,5 @@ jobs:
         working-directory: bootstrap
 
       - name: Run tests
-        run: $GITHUB_WORKSPACE/${{ env.PHPCQ_DIRECTORY }}/phpcq run
+        run: $GITHUB_WORKSPACE/${{ env.PHPCQ_DIRECTORY }}/phpcq run -v
         working-directory: bootstrap
