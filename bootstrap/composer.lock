@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpcq/plugin-api.git",
-                "reference": "e09750be54093e9950ed92cb998ce43b03418c8c"
+                "reference": "2de27f6604b2879c2235c69e6f9ed58a6487741d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpcq/plugin-api/zipball/e09750be54093e9950ed92cb998ce43b03418c8c",
-                "reference": "e09750be54093e9950ed92cb998ce43b03418c8c",
+                "url": "https://api.github.com/repos/phpcq/plugin-api/zipball/2de27f6604b2879c2235c69e6f9ed58a6487741d",
+                "reference": "2de27f6604b2879c2235c69e6f9ed58a6487741d",
                 "shasum": ""
             },
             "require": {
@@ -58,7 +58,7 @@
                 }
             ],
             "description": "PHP code quality project plugin API interfaces.",
-            "time": "2020-04-06T21:45:54+00:00"
+            "time": "2020-05-22T10:10:50+00:00"
         }
     ],
     "packages-dev": [],
