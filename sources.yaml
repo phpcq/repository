@@ -1,7 +1,7 @@
 repositories:
   bootstrap:
     type: bootstrap
-    source_dir: ./bootstrap
+    source_dir: ./bootstrap/plugins
 
   phar.phpunit.de:
     type: phar.io

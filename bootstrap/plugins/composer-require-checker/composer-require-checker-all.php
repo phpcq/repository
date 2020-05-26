@@ -5,12 +5,12 @@ use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
 
 return new class implements ConfigurationPluginInterface {
-    public function getName() : string
+    public function getName(): string
     {
         return 'composer-require-checker';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder) : void
+    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
     {
         $configOptionsBuilder
             ->describeStringOption('config_file', 'Path to configuration file')
@@ -18,11 +18,12 @@ return new class implements ConfigurationPluginInterface {
 
         $configOptionsBuilder->describeStringOption(
             'custom_flags',
-            'Any custom flags to pass to composer-require-checker. For valid flags refer to the composer-require-checker documentation.',
-            );
+            'Any custom flags to pass to composer-require-checker. ' .
+            'For valid flags refer to the composer-require-checker documentation.',
+        );
     }
 
-    public function processConfig(array $config, BuildConfigInterface $buildConfig) : iterable
+    public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
     {
         yield $buildConfig
             ->getTaskFactory()
@@ -31,16 +32,17 @@ return new class implements ConfigurationPluginInterface {
             ->build();
     }
 
-    private function buildArguments(array $config, BuildConfigInterface $buildConfig) : array
+    private function buildArguments(array $config, BuildConfigInterface $buildConfig): array
     {
         $arguments = ['check'];
 
+        $projectRoot = $buildConfig->getProjectConfiguration()->getProjectRootPath() . '/';
         if (isset($config['config_file'])) {
-            $arguments[] = '--config-file=' . $buildConfig->getProjectConfiguration()->getProjectRootPath() . '/' . $config['config_file'];
+            $arguments[] = '--config-file=' . $projectRoot . $config['config_file'];
         }
 
         if (isset($config['composer_file'])) {
-            $arguments[] = $buildConfig->getProjectConfiguration()->getProjectRootPath() . '/' . $config['composer_file'];
+            $arguments[] = $projectRoot . $config['composer_file'];
         }
 
         return $arguments;

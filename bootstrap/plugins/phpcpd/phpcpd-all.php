@@ -1,19 +1,20 @@
 <?php
 
+/**
+ * Tool home: https://github.com/sebastianbergmann/phpcpd
+ */
+
 use Phpcq\PluginApi\Version10\BuildConfigInterface;
 use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
 
-/**
- * Tool home: https://github.com/sebastianbergmann/phpcpd
- */
 return new class implements ConfigurationPluginInterface {
-    public function getName() : string
+    public function getName(): string
     {
         return 'phpcpd';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder) : void
+    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
     {
         $configOptionsBuilder->describeArrayOption(
             'names',
@@ -65,7 +66,7 @@ return new class implements ConfigurationPluginInterface {
         );
     }
 
-    public function processConfig(array $config, BuildConfigInterface $buildConfig) : iterable
+    public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
     {
         [$should, $excluded] = $this->processDirectories($config['directories']);
         $args = [];

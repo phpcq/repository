@@ -1,0 +1,68 @@
+name: Test commit
+
+env:
+  PHPCQ_DIRECTORY: ./phpcq-runner
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Pull source
+        uses: actions/checkout@v2
+
+      - name: Cache composer cache directory
+        uses: actions/cache@v1
+        env:
+          cache-name: composer-cache-dir
+        with:
+          path: ~/.cache/composer
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+
+      - name: Cache vendor directory of bootstrap
+        uses: actions/cache@v1
+        env:
+          cache-name: bootstrap-vendor
+        with:
+          path: bootstrap/vendor
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+
+      - name: Install composer dependencies
+        run: composer install
+        working-directory: bootstrap
+
+### BEGIN TODO REMOVE WHEN phpcq COMPOSER PLUGIN IS READY
+      - name: Cache vendor directory of phpcq tool runner
+        uses: actions/cache@v1
+        env:
+          cache-name: phpcq-vendor
+        with:
+          path: ${{ env.PHPCQ_DIRECTORY }}/vendor
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+
+      - name: Install phpcq tool runner
+        uses: actions/checkout@v2
+        with:
+          repository: 'phpcq/phpcq'
+          ref: dev-2.0
+          path: ${{ env.PHPCQ_DIRECTORY }}
+
+      - name: Install phpcq tool runner dependencies
+        run: composer install
+        working-directory: ${{ env.PHPCQ_DIRECTORY }}
+
+### END TODO REMOVE WHEN phpcq COMPOSER PLUGIN IS READY
+
+      - name: Install phpcq toolchain
+        run: $GITHUB_WORKSPACE/${{ env.PHPCQ_DIRECTORY }}/phpcq update -v
+        working-directory: bootstrap
+
+      - name: Run tests
+        run: $GITHUB_WORKSPACE/${{ env.PHPCQ_DIRECTORY }}/phpcq run -v
+        working-directory: bootstrap

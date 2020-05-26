@@ -5,37 +5,37 @@ use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
 
 return new class implements ConfigurationPluginInterface {
-    public function getName() : string
+    public function getName(): string
     {
-        return 'phpcs';
+        return 'phpcbf';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder) : void
+    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
     {
         $configOptionsBuilder
-            ->describeArrayOption('directories', 'The source directories to be analyzed with phpcs.')
-            ->describeStringOption('standard', 'The default coding standard style')
+            ->describeArrayOption('directories', 'The source directories to be fixed with phpcbf.')
+            ->describeStringOption('standard', 'The default code style', 'PSR12')
             ->describeArrayOption('excluded', 'The excluded files and folders.', [])
         ;
 
         $configOptionsBuilder->describeStringOption(
             'custom_flags',
-            'Any custom flags to pass to phpcs. For valid flags refer to the cphpcs documentation.',
-            );
+            'Any custom flags to pass to phpcbf. For valid flags refer to the cphpcs documentation.',
+        );
     }
 
-    public function processConfig(array $config, BuildConfigInterface $buildConfig) : iterable
+    public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
     {
         foreach ($config['directories'] as $directory => $directoryConfig) {
             yield $buildConfig
                 ->getTaskFactory()
-                ->buildRunPhar('phpcs', $this->buildArguments($directory, $directoryConfig ?: $config, $buildConfig))
+                ->buildRunPhar('phpcbf', $this->buildArguments($directory, $directoryConfig ?: $config, $buildConfig))
                 ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
                 ->build();
         }
     }
 
-    private function buildArguments(string $directory, array $config, BuildConfigInterface $buildConfig) : array
+    private function buildArguments(string $directory, array $config, BuildConfigInterface $buildConfig): array
     {
         $arguments = [];
 

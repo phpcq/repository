@@ -5,12 +5,12 @@ use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
 
 return new class implements ConfigurationPluginInterface {
-    public function getName() : string
+    public function getName(): string
     {
         return 'psalm';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder) : void
+    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
     {
         $configOptionsBuilder
             ->describeBoolOption('debug', 'Show debug information.')
@@ -24,7 +24,7 @@ return new class implements ConfigurationPluginInterface {
         );
     }
 
-    public function processConfig(array $config, BuildConfigInterface $buildConfig) : iterable
+    public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
     {
         yield $buildConfig
             ->getTaskFactory()
@@ -33,7 +33,7 @@ return new class implements ConfigurationPluginInterface {
             ->build();
     }
 
-    private function buildArguments(array $config) : array
+    private function buildArguments(array $config): array
     {
         $arguments = [];
 

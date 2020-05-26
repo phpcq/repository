@@ -5,22 +5,30 @@ use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
 
 return new class implements ConfigurationPluginInterface {
-    public function getName() : string
+    public function getName(): string
     {
         return 'composer-normalize';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder) : void
+    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
     {
         $configOptionsBuilder
             ->describeBoolOption('dry_run', 'Show the results of normalizing, but do not modify any files', true)
             ->describeStringOption('file', 'Path to composer.json file relative to project root')
-            ->describeIntOption('indent_size', 'Indent size (an integer greater than 0); should be used with the indent_style option', 2)
-            ->describeStringOption('indent_style', 'Indent style (one of "space", "tab"); should be used with the indent_size option', 'space')
+            ->describeIntOption(
+                'indent_size',
+                'Indent size (an integer greater than 0); should be used with the indent_style option',
+                2
+            )
+            ->describeStringOption(
+                'indent_style',
+                'Indent style (one of "space", "tab"); should be used with the indent_size option',
+                'space'
+            )
             ->describeStringOption('no_update_lock', 'Path to the composer.json', 'composer.json');
     }
 
-    public function processConfig(array $config, BuildConfigInterface $buildConfig) : iterable
+    public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
     {
         yield $buildConfig
             ->getTaskFactory()
@@ -29,7 +37,7 @@ return new class implements ConfigurationPluginInterface {
             ->build();
     }
 
-    private function buildArguments(array $config, BuildConfigInterface $buildConfig) : array
+    private function buildArguments(array $config, BuildConfigInterface $buildConfig): array
     {
         $arguments = [];
 

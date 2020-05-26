@@ -1,19 +1,20 @@
 <?php
 
+/**
+ * Tool home: https://github.com/sebastianbergmann/phploc
+ */
+
 use Phpcq\PluginApi\Version10\BuildConfigInterface;
 use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
 
-/**
- * Tool home: https://github.com/sebastianbergmann/phploc
- */
 return new class implements ConfigurationPluginInterface {
-    public function getName() : string
+    public function getName(): string
     {
         return 'phploc';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder) : void
+    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
     {
         $configOptionsBuilder->describeArrayOption('output', 'List of outputs to use.');
 
@@ -25,7 +26,7 @@ return new class implements ConfigurationPluginInterface {
         $configOptionsBuilder->describeArrayOption('directories', 'Source directories to be analyzed with phploc.');
     }
 
-    public function processConfig(array $config, BuildConfigInterface $buildConfig) : iterable
+    public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
     {
         [$should, $excluded] = $this->processDirectories($config['directories']);
         $args = [];
@@ -35,7 +36,6 @@ return new class implements ConfigurationPluginInterface {
                     continue;
                 }
                 $args[] = '--exclude=' . $path;
-
             }
         }
         if ('' !== ($values = $config['custom_flags'] ?? '')) {
