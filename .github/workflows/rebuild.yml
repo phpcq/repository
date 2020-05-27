@@ -65,14 +65,15 @@ jobs:
           path: ${{ env.TARGET_DIRECTORY }}
 
       - name: Rebuild repository
-        run: ${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild
+        id: rebuild
+        run: echo "##[set-output name=log;]$(${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v)"
         env:
           GITHUB_TOKEN: ${{ secrets.BUILDER_GITHUB_TOKEN }}
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4.1.2
         with:
-          commit_message: Update repository
+          commit_message: ${{ steps.rebuild.outputs.log }}}}
           branch: ${{ env.TARGET_BRANCH }}
           file_pattern: repository.json
           repository: ${{ env.TARGET_DIRECTORY }}
