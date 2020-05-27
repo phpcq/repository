@@ -68,8 +68,8 @@ jobs:
       - name: Rebuild repository
         id: rebuild
         run: |
-          "${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v | tee ${{ env.TARGET_DIRECTORY }}/COMMIT_MSG"
-          echo "::set-env name=COMMIT_MSG::$(cat ${{ env.TARGET_DIRECTORY }}/COMMIT_MSG)"
+          ${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v | tee COMMIT_MSG
+          echo "::set-env name=COMMIT_MSG::$(cat COMMIT_MSG)"
         env:
           GITHUB_TOKEN: ${{ secrets.BUILDER_GITHUB_TOKEN }}
 
