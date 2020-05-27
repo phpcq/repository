@@ -65,16 +65,23 @@ jobs:
           path: ${{ env.TARGET_DIRECTORY }}
 
       - name: Rebuild repository
-        run: ${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild
+        id: rebuild
+        run: |
+          ${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v | tee COMMIT_MSG
+          message=$(cat COMMIT_MSG)
+          message="${message//'%'/'%25'}"
+          message="${message//$'\n'/'%0A'}"
+          message="${message//$'\r'/'%0D'}"
+          echo "::set-env name=COMMIT_MSG::$message"
         env:
           GITHUB_TOKEN: ${{ secrets.BUILDER_GITHUB_TOKEN }}
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4.1.2
         with:
-          commit_message: Update repository
+          commit_message: ${{ env.COMMIT_MSG }}
           branch: ${{ env.TARGET_BRANCH }}
-          file_pattern: repository.json
+          file_pattern: '*.json'
           repository: ${{ env.TARGET_DIRECTORY }}
           commit_user_name: PHP Code Quality Bot
           commit_user_email: phpcq-bot@users.noreply.github.com
