@@ -69,7 +69,11 @@ jobs:
         id: rebuild
         run: |
           ${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v | tee COMMIT_MSG
-          echo "::set-env name=COMMIT_MSG::$(cat COMMIT_MSG)"
+          message=$(cat COMMIT_MSG)
+          message="${message//'%'/'%25'}"
+          message="${message//$'\n'/'%0A'}"
+          message="${message//$'\r'/'%0D'}"
+          echo "::set-env name=COMMIT_MSG::$message"
         env:
           GITHUB_TOKEN: ${{ secrets.BUILDER_GITHUB_TOKEN }}
 
