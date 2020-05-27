@@ -68,8 +68,8 @@ jobs:
       - name: Rebuild repository
         id: rebuild
         run: |
-          commit_message="$(${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v)"
-          echo $commit_message
+          export commit_message="$(${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v)"
+          echo "$commit_message"
           commit_message="${commit_message//'%'/'%25'}"
           commit_message="${commit_message//$'\n'/'%0A'}"
           commit_message="${commit_message//$'\r'/'%0D'}"
