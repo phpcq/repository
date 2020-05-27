@@ -67,20 +67,14 @@ jobs:
 
       - name: Rebuild repository
         id: rebuild
-        run: |
-          export commit_message="$(${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v)"
-          echo "$commit_message"
-          commit_message="${commit_message//'%'/'%25'}"
-          commit_message="${commit_message//$'\n'/'%0A'}"
-          commit_message="${commit_message//$'\r'/'%0D'}"
-          echo "::set-output name=commit_message::$commit_message"
+        run: "${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v | tee ${ env.TARGET_DIRECTORY}/COMMIT_MSG"
         env:
           GITHUB_TOKEN: ${{ secrets.BUILDER_GITHUB_TOKEN }}
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4.1.2
         with:
-          commit_message: ${{ steps.rebuild.outputs.commit_message }}
+          commit_message: "$(cat ${ env.TARGET_DIRECTORY}/COMMIT_MSG)"
           branch: ${{ env.TARGET_BRANCH }}
           file_pattern: '*.json'
           repository: ${{ env.TARGET_DIRECTORY }}
