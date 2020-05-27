@@ -67,14 +67,18 @@ jobs:
 
       - name: Rebuild repository
         id: rebuild
-        run: echo "##[set-output name=log;]$(${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v)"
+        run: |
+          commit_message="$(${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v)"
+          commit_message="${commit_message//'%'/'%25'}"
+          commit_message="${commit_message//$'\n'/'%0A'}"
+          commit_message="${commit_message//$'\r'/'%0D'}"
         env:
           GITHUB_TOKEN: ${{ secrets.BUILDER_GITHUB_TOKEN }}
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4.1.2
         with:
-          commit_message: ${{ steps.rebuild.outputs.log }}}}
+          commit_message: ${{ steps.rebuild.outputs.commit_message }}
           branch: ${{ env.TARGET_BRANCH }}
           file_pattern: '*.json'
           repository: ${{ env.TARGET_DIRECTORY }}
