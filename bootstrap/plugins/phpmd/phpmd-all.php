@@ -7,6 +7,9 @@
 use Phpcq\PluginApi\Version10\BuildConfigInterface;
 use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
+use Phpcq\PluginApi\Version10\OutputInterface;
+use Phpcq\PluginApi\Version10\PostProcessorInterface;
+use Phpcq\PluginApi\Version10\ReportInterface;
 
 return new class implements ConfigurationPluginInterface {
     public function getName(): string
@@ -16,12 +19,6 @@ return new class implements ConfigurationPluginInterface {
 
     public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
     {
-        $configOptionsBuilder->describeStringOption(
-            'format',
-            'Output format to use (ansi, html, json, text, xml).',
-            'text'
-        );
-
         $configOptionsBuilder->describeArrayOption(
             'ruleset',
             'List of rulesets (cleancode, codesize, controversial, design, naming, unusedcode).',
@@ -47,10 +44,7 @@ return new class implements ConfigurationPluginInterface {
     {
         [$should, $excluded] = $this->processDirectories($config['directories']);
 
-        $flags = [
-            'format' => 'text',
-            'ruleset' => 'naming,unusedcode',
-        ];
+        $flags = ['ruleset' => 'naming,unusedcode'];
 
         foreach ($flags as $key => $value) {
             if ('' !== ($value = $this->commaValues($config, $key))) {
@@ -60,7 +54,7 @@ return new class implements ConfigurationPluginInterface {
 
         $args = [
             implode(',', $should),
-            $flags['format'],
+            'xml',
             $flags['ruleset'],
         ];
 
@@ -78,10 +72,18 @@ return new class implements ConfigurationPluginInterface {
             $args[] = $values;
         }
 
+        // Fixme: We need a proper way to create temp files
+        $tmpfile = $buildConfig->getBuildTempDir() . '/phpmd.xml';
+        $args[] = '--report-file';
+        $args[] = $tmpfile;
+
         yield $buildConfig
             ->getTaskFactory()
             ->buildRunPhar('phpmd', $args)
             ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
+            ->withPostProcessor(
+                $this->createPostProcessor($tmpfile, $buildConfig->getProjectConfiguration()->getProjectRootPath())
+            )
             ->build();
     }
 
@@ -115,5 +117,89 @@ return new class implements ConfigurationPluginInterface {
             return '';
         }
         return implode(',', (array) $config[$key]);
+    }
+
+    private function createPostProcessor(string $xmlFile, string $rootDir): PostProcessorInterface
+    {
+        return new class($xmlFile, $rootDir) implements PostProcessorInterface {
+            private $xmlFile;
+            private $rootDir;
+
+            public function __construct(string $xmlFile, string $rootDir)
+            {
+                $this->xmlFile = $xmlFile;
+                $this->rootDir = $rootDir;
+            }
+
+            public function process(ReportInterface $report, array $consoleOutput, int $exitCode, OutputInterface $output): void
+            {
+                $xmlDocument = new DOMDocument('1.0');
+                $xmlDocument->load($this->xmlFile);
+                $rootNode = $xmlDocument->firstChild;
+
+                $report->addToolReport('phpmd', $exitCode === 0 ? ReportInterface::STATUS_PASSED : ReportInterface::STATUS_FAILED);
+
+                if (!$rootNode instanceof DOMNode) {
+                    return;
+                }
+
+                foreach ($rootNode->childNodes as $childNode) {
+                    if (!$childNode instanceof DOMElement || $childNode->nodeName !== 'file') {
+                        continue;
+                    }
+
+                    $fileName = $childNode->getAttribute('name');
+                    if (strpos($fileName, $this->rootDir) === 0) {
+                        $fileName = substr($fileName, strlen($this->rootDir) + 1);
+                    }
+
+                    $file = $report->addCheckstyle($fileName);
+
+                    foreach ($childNode->childNodes as $violationNode) {
+                        if (!$violationNode instanceof DOMElement) {
+                            continue;
+                        }
+
+                        $message = sprintf(
+                            '%s%s(Ruleset: %s, %s)',
+                            trim($violationNode->textContent),
+                            "\n",
+                            $this->getXmlAttribute($violationNode, 'ruleset', ''),
+                            $this->getXmlAttribute($violationNode, 'externalInfoUrl', '')
+                        );
+
+                        $file->add(
+                            'error',
+                            $message,
+                            'phpmd',
+                            $this->getXmlAttribute($violationNode, 'rule'),
+                            $this->getIntXmlAttribute($violationNode, 'beginline'),
+                        );
+                    }
+                }
+            }
+
+            /**
+             * @param mixed $defaultValue
+             */
+            private function getXmlAttribute(DOMElement $element, string $attribute, ?string $defaultValue = null): ?string
+            {
+                if ($element->hasAttribute($attribute)) {
+                    return $element->getAttribute($attribute);
+                }
+
+                return $defaultValue;
+            }
+
+            private function getIntXmlAttribute(DOMElement $element, string $attribute): ?int
+            {
+                $value = $this->getXmlAttribute($element, $attribute);
+                if ($value === null) {
+                    return null;
+                }
+
+                return (int) $value;
+            }
+        };
     }
 };
