@@ -26,14 +26,18 @@ return new class implements ConfigurationPluginInterface {
 
     public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
     {
+        // Fixme: We need a proper way to create temp files
+        $tmpfile = $buildConfig->getBuildTempDir() . '/psalm.checkstyle.xml';
+
         yield $buildConfig
             ->getTaskFactory()
-            ->buildRunPhar('psalm', $this->buildArguments($config))
+            ->buildRunPhar('psalm', $this->buildArguments($config, $tmpfile))
             ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
+            ->withCheckstyleFilePostProcessor($tmpfile)
             ->build();
     }
 
-    private function buildArguments(array $config): array
+    private function buildArguments(array $config, string $tempFile): array
     {
         $arguments = [];
 
@@ -54,6 +58,8 @@ return new class implements ConfigurationPluginInterface {
         if ('' !== ($values = $config['custom_flags'] ?? '')) {
             $arguments[] = $values;
         }
+
+        $arguments[] = '--report=' . $tempFile;
 
         return $arguments;
     }

@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c4717e36b444a4e87e888348e539549f",
+    "content-hash": "847aee295c3093239ac2b7e183d51e26",
     "packages": [
         {
             "name": "phpcq/plugin-api",
-            "version": "dev-master",
+            "version": "dev-feature/checkstyle",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpcq/plugin-api.git",
-                "reference": "2de27f6604b2879c2235c69e6f9ed58a6487741d"
+                "reference": "47c54212ba2a3bfa3014fff4f007dce3687a4be6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpcq/plugin-api/zipball/2de27f6604b2879c2235c69e6f9ed58a6487741d",
-                "reference": "2de27f6604b2879c2235c69e6f9ed58a6487741d",
+                "url": "https://api.github.com/repos/phpcq/plugin-api/zipball/47c54212ba2a3bfa3014fff4f007dce3687a4be6",
+                "reference": "47c54212ba2a3bfa3014fff4f007dce3687a4be6",
                 "shasum": ""
             },
             "require": {
@@ -58,7 +58,7 @@
                 }
             ],
             "description": "PHP code quality project plugin API interfaces.",
-            "time": "2020-05-22T10:10:50+00:00"
+            "time": "2020-05-28T08:37:15+00:00"
         }
     ],
     "packages-dev": [],

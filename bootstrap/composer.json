@@ -23,7 +23,7 @@
   ],
   "require": {
     "php": "^7.3",
-    "phpcq/plugin-api": "^1.0.0@dev"
+    "phpcq/plugin-api": "dev-feature/checkstyle"
   },
   "autoload-dev": {
     "psr-4": {
