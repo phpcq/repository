@@ -78,7 +78,7 @@ return new class implements ConfigurationPluginInterface {
 
                 $report->addToolReport('composer-require-checker', $status);
                 $report->addCheckstyle($this->composerFile)
-                    ->add($severity, implode("\n", $consoleOutput), 'composer-require-checker');
+                    ->add($severity, trim(implode("\n", $consoleOutput)), 'composer-require-checker');
             }
         };
     }

@@ -96,7 +96,7 @@ return new class implements ConfigurationPluginInterface {
 
                 $report->addToolReport('composer-normalize', $status);
                 $report->addCheckstyle($this->composerFile)
-                    ->add($severity, implode("\n", $consoleOutput), 'composer-normalize');
+                    ->add($severity, trim(implode("\n", $consoleOutput)), 'composer-normalize');
             }
         };
     }
