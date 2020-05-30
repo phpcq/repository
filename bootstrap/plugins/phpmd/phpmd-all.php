@@ -10,6 +10,7 @@ use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
 use Phpcq\PluginApi\Version10\OutputInterface;
 use Phpcq\PluginApi\Version10\PostProcessorInterface;
 use Phpcq\PluginApi\Version10\ReportInterface;
+use Phpcq\PluginApi\Version10\ToolReportInterface;
 
 return new class implements ConfigurationPluginInterface {
     public function getName(): string
@@ -72,8 +73,7 @@ return new class implements ConfigurationPluginInterface {
             $args[] = $values;
         }
 
-        // Fixme: We need a proper way to create temp files
-        $tmpfile = $buildConfig->getBuildTempDir() . '/phpmd.xml';
+        $tmpfile = $tmpfile = $buildConfig->getUniqueTempFile($this);
         $args[] = '--report-file';
         $args[] = $tmpfile;
 
@@ -131,15 +131,14 @@ return new class implements ConfigurationPluginInterface {
                 $this->rootDir = $rootDir;
             }
 
-            public function process(ReportInterface $report, array $consoleOutput, int $exitCode, OutputInterface $output): void
+            public function process(ToolReportInterface $report, string $consoleOutput, int $exitCode, OutputInterface $output): void
             {
                 $xmlDocument = new DOMDocument('1.0');
                 $xmlDocument->load($this->xmlFile);
                 $rootNode = $xmlDocument->firstChild;
 
-                $report->addToolReport('phpmd', $exitCode === 0 ? ReportInterface::STATUS_PASSED : ReportInterface::STATUS_FAILED);
-
                 if (!$rootNode instanceof DOMNode) {
+                    $report->finish($exitCode === 0 ? ReportInterface::STATUS_PASSED : ReportInterface::STATUS_FAILED);
                     return;
                 }
 
@@ -152,8 +151,6 @@ return new class implements ConfigurationPluginInterface {
                     if (strpos($fileName, $this->rootDir) === 0) {
                         $fileName = substr($fileName, strlen($this->rootDir) + 1);
                     }
-
-                    $file = $report->addCheckstyle($fileName);
 
                     foreach ($childNode->childNodes as $violationNode) {
                         if (!$violationNode instanceof DOMElement) {
@@ -168,15 +165,17 @@ return new class implements ConfigurationPluginInterface {
                             $this->getXmlAttribute($violationNode, 'externalInfoUrl', '')
                         );
 
-                        $file->add(
-                            'error',
+                        $report->addError(
+                            'error', // FIXME: can we use attr "priority" (int) for severity?
                             $message,
-                            'phpmd',
-                            $this->getXmlAttribute($violationNode, 'rule'),
+                            $fileName,
                             $this->getIntXmlAttribute($violationNode, 'beginline'),
+                            null,
+                            $this->getXmlAttribute($violationNode, 'rule'),
                         );
                     }
                 }
+                $report->finish($exitCode === 0 ? ReportInterface::STATUS_PASSED : ReportInterface::STATUS_FAILED);
             }
 
             /**

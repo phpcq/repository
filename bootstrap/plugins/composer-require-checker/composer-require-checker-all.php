@@ -6,6 +6,7 @@ use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
 use Phpcq\PluginApi\Version10\OutputInterface;
 use Phpcq\PluginApi\Version10\PostProcessorInterface;
 use Phpcq\PluginApi\Version10\ReportInterface;
+use Phpcq\PluginApi\Version10\ToolReportInterface;
 
 return new class implements ConfigurationPluginInterface {
     public function getName(): string
@@ -63,8 +64,8 @@ return new class implements ConfigurationPluginInterface {
             }
 
             public function process(
-                ReportInterface $report,
-                array $consoleOutput,
+                ToolReportInterface $report,
+                string $consoleOutput,
                 int $exitCode,
                 OutputInterface $output
             ): void {
@@ -76,9 +77,8 @@ return new class implements ConfigurationPluginInterface {
                     $status   = ReportInterface::STATUS_FAILED;
                 }
 
-                $report->addToolReport('composer-require-checker', $status);
-                $report->addCheckstyle($this->composerFile)
-                    ->add($severity, trim(implode("\n", $consoleOutput)), 'composer-require-checker');
+                $report->addError($severity, trim($consoleOutput), $this->composerFile);
+                $report->finish($status);
             }
         };
     }

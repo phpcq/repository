@@ -3,6 +3,7 @@
 use Phpcq\PluginApi\Version10\BuildConfigInterface;
 use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
+use Phpcq\PluginApi\Version10\Util\CheckstyleReportAppender;
 
 return new class implements ConfigurationPluginInterface {
     public function getName(): string
@@ -26,15 +27,15 @@ return new class implements ConfigurationPluginInterface {
 
     public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
     {
-        // Fixme: We need a proper way to create temp files
-        $tmpfile = $buildConfig->getBuildTempDir() . '/psalm.checkstyle.xml';
-
+        $projectRoot = $buildConfig->getProjectConfiguration()->getProjectRootPath();
         foreach ($config['directories'] as $directory => $directoryConfig) {
+            $tmpfile = $buildConfig->getUniqueTempFile($this, 'checkstyle');
+
             yield $buildConfig
                 ->getTaskFactory()
-                ->buildRunPhar('phpcs', $this->buildArguments($directory, $directoryConfig ?: $config, $buildConfig, $tmpfile))
-                ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
-                ->withCheckstyleFilePostProcessor($tmpfile)
+                ->buildRunPhar('phpcs', $this->buildArguments($directory, $directoryConfig ?: $config, $tmpfile))
+                ->withWorkingDirectory($projectRoot)
+                ->withPostProcessor(CheckstyleReportAppender::postProcess($tmpfile, $projectRoot))
                 ->build();
         }
     }
@@ -42,7 +43,6 @@ return new class implements ConfigurationPluginInterface {
     private function buildArguments(
         string $directory,
         array $config,
-        BuildConfigInterface $buildConfig,
         string $tempFile
     ) : array {
         $arguments = [];

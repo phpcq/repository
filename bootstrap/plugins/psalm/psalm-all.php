@@ -3,6 +3,7 @@
 use Phpcq\PluginApi\Version10\BuildConfigInterface;
 use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
+use Phpcq\PluginApi\Version10\Util\CheckstyleReportAppender;
 
 return new class implements ConfigurationPluginInterface {
     public function getName(): string
@@ -26,14 +27,14 @@ return new class implements ConfigurationPluginInterface {
 
     public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
     {
-        // Fixme: We need a proper way to create temp files
-        $tmpfile = $buildConfig->getBuildTempDir() . '/psalm.checkstyle.xml';
+        $projectRoot = $buildConfig->getProjectConfiguration()->getProjectRootPath();
+        $tmpfile     = $buildConfig->getUniqueTempFile($this) . '.checkstyle.xml';
 
         yield $buildConfig
             ->getTaskFactory()
             ->buildRunPhar('psalm', $this->buildArguments($config, $tmpfile))
-            ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
-            ->withCheckstyleFilePostProcessor($tmpfile)
+            ->withWorkingDirectory($projectRoot)
+            ->withPostProcessor(CheckstyleReportAppender::postProcess($tmpfile, $projectRoot))
             ->build();
     }
 

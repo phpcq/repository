@@ -5,7 +5,7 @@ use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
 use Phpcq\PluginApi\Version10\OutputInterface;
 use Phpcq\PluginApi\Version10\PostProcessorInterface;
-use Phpcq\PluginApi\Version10\ReportInterface;
+use Phpcq\PluginApi\Version10\ToolReportInterface;
 
 return new class implements ConfigurationPluginInterface {
     public function getName(): string
@@ -81,22 +81,21 @@ return new class implements ConfigurationPluginInterface {
             }
 
             public function process(
-                ReportInterface $report,
-                array $consoleOutput,
+                ToolReportInterface $report,
+                string $consoleOutput,
                 int $exitCode,
                 OutputInterface $output
             ): void {
                 if ($exitCode === 0) {
                     $severity = 'info';
-                    $status   = ReportInterface::STATUS_PASSED;
+                    $status   = ToolReportInterface::STATUS_PASSED;
                 } else {
                     $severity = 'error';
-                    $status   = ReportInterface::STATUS_FAILED;
+                    $status   = ToolReportInterface::STATUS_FAILED;
                 }
 
-                $report->addToolReport('composer-normalize', $status);
-                $report->addCheckstyle($this->composerFile)
-                    ->add($severity, trim(implode("\n", $consoleOutput)), 'composer-normalize');
+                $report->addError($severity, trim($consoleOutput), $this->composerFile);
+                $report->finish($status);
             }
         };
     }
