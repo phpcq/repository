@@ -198,6 +198,7 @@ class ComposerRequireCheckerAllTest extends BootstrapTestCase
         $transformer->detach(0);
     }
 
+    /** @SuppressWarnings(PHPMD.UnusedLocalVariable) */
     public function mockOutputTransformer(array $configurationValues): OutputTransformerInterface
     {
         $outputTransformer = null;

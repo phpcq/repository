@@ -110,14 +110,7 @@ class BuildConfigBuilder
             ->method('getProjectConfiguration')
             ->willReturn($this->getProjectConfiguration());
 
-        if (null !== $this->tempFiles) {
-            $this->config
-                ->expects($this->testCase->exactly(count($this->tempFiles)))
-                ->method('getUniqueTempFile')
-                ->willReturnOnConsecutiveCalls(...$this->tempFiles);
-        } else {
-            $this->config->expects($this->testCase->never())->method('getUniqueTempFile');
-        }
+        $this->mockTempFiles();
 
         if (null !== $this->buildTempDir) {
             $this->config
@@ -129,6 +122,19 @@ class BuildConfigBuilder
         $this->config->expects($this->testCase->never())->method('getBuildTempDir');
 
         return $this->config;
+    }
+
+    private function mockTempFiles(): void
+    {
+        if (null !== $this->tempFiles) {
+            $this->config
+                ->expects($this->testCase->exactly(count($this->tempFiles)))
+                ->method('getUniqueTempFile')
+                ->willReturnOnConsecutiveCalls(...$this->tempFiles);
+            return;
+        }
+
+        $this->config->expects($this->testCase->never())->method('getUniqueTempFile');
     }
 
     private function getProjectConfiguration(): ProjectConfigInterface
