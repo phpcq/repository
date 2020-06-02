@@ -77,7 +77,7 @@ return new class implements ConfigurationPluginInterface {
                     $status   = ReportInterface::STATUS_FAILED;
                 }
 
-                $report->addError($severity, trim($consoleOutput), $this->composerFile);
+                $report->addDiagnostic($severity, trim($consoleOutput), $this->composerFile);
                 $report->finish($status);
             }
         };

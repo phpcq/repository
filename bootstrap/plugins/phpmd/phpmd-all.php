@@ -165,7 +165,7 @@ return new class implements ConfigurationPluginInterface {
                             $this->getXmlAttribute($violationNode, 'externalInfoUrl', '')
                         );
 
-                        $report->addError(
+                        $report->addDiagnostic(
                             'error', // FIXME: can we use attr "priority" (int) for severity?
                             $message,
                             $fileName,
