@@ -34,12 +34,12 @@ abstract class BootstrapTestCase extends TestCase
     public static function getPluginInstance(): PluginInterface
     {
         // As plugins MUST be stateless, it is safe to include it only once.
-        $calledClass = get_called_class();
-        if (isset(self::$instances[$calledClass])) {
-            return self::$instances[$calledClass];
+        $includeFile = realpath(static::getBootstrapFile());
+        if (isset(self::$instances[$includeFile])) {
+            return self::$instances[$includeFile];
         }
 
-        return self::$instances[$calledClass] = require_once static::getBootstrapFile();
+        return self::$instances[$includeFile] = require $includeFile;
     }
 
     public function testGetName(): void
