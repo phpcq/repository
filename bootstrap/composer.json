@@ -23,6 +23,7 @@
   ],
   "require": {
     "php": "^7.3",
+    "ext-dom": "*",
     "phpcq/plugin-api": "dev-feature/checkstyle"
   },
   "autoload-dev": {
