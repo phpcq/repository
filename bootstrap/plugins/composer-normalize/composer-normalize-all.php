@@ -3,9 +3,11 @@
 use Phpcq\PluginApi\Version10\BuildConfigInterface;
 use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
-use Phpcq\PluginApi\Version10\OutputInterface;
-use Phpcq\PluginApi\Version10\PostProcessorInterface;
+use Phpcq\PluginApi\Version10\OutputTransformerFactoryInterface;
+use Phpcq\PluginApi\Version10\OutputTransformerInterface;
+use Phpcq\PluginApi\Version10\ReportInterface;
 use Phpcq\PluginApi\Version10\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Util\BufferedLineReader;
 
 return new class implements ConfigurationPluginInterface {
     public function getName(): string
@@ -40,7 +42,7 @@ return new class implements ConfigurationPluginInterface {
             ->getTaskFactory()
             ->buildRunPhar('composer-normalize', $this->buildArguments($config))
             ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
-            ->withPostProcessor($this->createPostProcessor($composerJson))
+            ->withOutputTransformer($this->createOutputTransformerFactory($composerJson))
             ->build();
     }
 
@@ -74,9 +76,11 @@ return new class implements ConfigurationPluginInterface {
         return $arguments;
     }
 
-    private function createPostProcessor(string $composerFile): PostProcessorInterface
+
+    private function createOutputTransformerFactory(string $composerFile): OutputTransformerFactoryInterface
     {
-        return new class ($composerFile) implements PostProcessorInterface {
+        return new class ($composerFile) implements OutputTransformerFactoryInterface {
+            /** @var string */
             private $composerFile;
 
             public function __construct(string $composerFile)
@@ -84,22 +88,51 @@ return new class implements ConfigurationPluginInterface {
                 $this->composerFile = $composerFile;
             }
 
-            public function process(
-                ToolReportInterface $report,
-                string $consoleOutput,
-                int $exitCode,
-                OutputInterface $output
-            ): void {
-                if ($exitCode === 0) {
-                    $severity = 'info';
-                    $status   = ToolReportInterface::STATUS_PASSED;
-                } else {
-                    $severity = 'error';
-                    $status   = ToolReportInterface::STATUS_FAILED;
-                }
+            public function createFor(ToolReportInterface $report): OutputTransformerInterface
+            {
+                return new class ($this->composerFile, $report) implements OutputTransformerInterface {
+                    /** @var string */
+                    private $composerFile;
+                    /** @var BufferedLineReader */
+                    private $data;
+                    /** @var ToolReportInterface */
+                    private $report;
 
-                $report->addDiagnostic($severity, trim($consoleOutput), $this->composerFile);
-                $report->finish($status);
+                    public function __construct(string $composerFile, ToolReportInterface $report)
+                    {
+                        $this->composerFile = $composerFile;
+                        $this->report       = $report;
+                        $this->data         = new BufferedLineReader();
+                    }
+
+                    public function write(string $data, int $channel): void
+                    {
+                        // Can not single channel, as require checker writes every output to STDOUT except for setup errors.
+                        $this->data->push($data);
+                    }
+
+                    public function finish(int $exitCode): void
+                    {
+                        $this->process(
+                            0 === $exitCode ? ToolReportInterface::SEVERITY_ERROR : ToolReportInterface::SEVERITY_INFO
+                        );
+                        $this->report->finish(0 === $exitCode
+                            ? ReportInterface::STATUS_PASSED
+                            : ReportInterface::STATUS_FAILED);
+
+                        $this->report = null;
+                    }
+
+                    private function process(string $severity): void
+                    {
+                        // FIXME: should parse the data instead of appending.
+                        $diagnostic = '';
+                        while (null !== $line = $this->data->fetch()) {
+                            $diagnostic .= $line;
+                        }
+                        $this->report->addDiagnostic($severity, $diagnostic, $this->composerFile);
+                    }
+                };
             }
         };
     }

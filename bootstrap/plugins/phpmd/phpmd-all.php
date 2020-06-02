@@ -7,8 +7,8 @@
 use Phpcq\PluginApi\Version10\BuildConfigInterface;
 use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
-use Phpcq\PluginApi\Version10\OutputInterface;
-use Phpcq\PluginApi\Version10\PostProcessorInterface;
+use Phpcq\PluginApi\Version10\OutputTransformerFactoryInterface;
+use Phpcq\PluginApi\Version10\OutputTransformerInterface;
 use Phpcq\PluginApi\Version10\ReportInterface;
 use Phpcq\PluginApi\Version10\ToolReportInterface;
 
@@ -73,16 +73,16 @@ return new class implements ConfigurationPluginInterface {
             $args[] = $values;
         }
 
-        $tmpfile = $tmpfile = $buildConfig->getUniqueTempFile($this, 'xml');
+        $xmlfile = $xmlfile = $buildConfig->getUniqueTempFile($this, 'xml');
         $args[] = '--report-file';
-        $args[] = $tmpfile;
+        $args[] = $xmlfile;
 
         yield $buildConfig
             ->getTaskFactory()
             ->buildRunPhar('phpmd', $args)
             ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
-            ->withPostProcessor(
-                $this->createPostProcessor($tmpfile, $buildConfig->getProjectConfiguration()->getProjectRootPath())
+            ->withOutputTransformer(
+                $this->createOutputTransformer($xmlfile, $buildConfig->getProjectConfiguration()->getProjectRootPath())
             )
             ->build();
     }
@@ -119,9 +119,9 @@ return new class implements ConfigurationPluginInterface {
         return implode(',', (array) $config[$key]);
     }
 
-    private function createPostProcessor(string $xmlFile, string $rootDir): PostProcessorInterface
+    private function createOutputTransformer(string $xmlFile, string $rootDir): OutputTransformerFactoryInterface
     {
-        return new class ($xmlFile, $rootDir) implements PostProcessorInterface {
+        return new class ($xmlFile, $rootDir) implements OutputTransformerFactoryInterface {
             private $xmlFile;
             private $rootDir;
 
@@ -131,80 +131,104 @@ return new class implements ConfigurationPluginInterface {
                 $this->rootDir = $rootDir;
             }
 
-            public function process(
-                ToolReportInterface $report,
-                string $consoleOutput,
-                int $exitCode,
-                OutputInterface $output
-            ): void {
-                $xmlDocument = new DOMDocument('1.0');
-                $xmlDocument->load($this->xmlFile);
-                $rootNode = $xmlDocument->firstChild;
+            public function createFor(ToolReportInterface $report): OutputTransformerInterface
+            {
+                return new class ($this->xmlFile, $this->rootDir, $report) implements OutputTransformerInterface {
+                    /** @var string */
+                    private $xmlFile;
+                    /** @var string */
+                    private $rootDir;
+                    /** @var ToolReportInterface */
+                    private $report;
 
-                if (!$rootNode instanceof DOMNode) {
-                    $report->finish($exitCode === 0 ? ReportInterface::STATUS_PASSED : ReportInterface::STATUS_FAILED);
-                    return;
-                }
-
-                foreach ($rootNode->childNodes as $childNode) {
-                    if (!$childNode instanceof DOMElement || $childNode->nodeName !== 'file') {
-                        continue;
+                    public function __construct(string $xmlFile, string $rootDir, ToolReportInterface $report)
+                    {
+                        $this->xmlFile = $xmlFile;
+                        $this->rootDir = $rootDir;
+                        $this->report  = $report;
                     }
 
-                    $fileName = $childNode->getAttribute('name');
-                    if (strpos($fileName, $this->rootDir) === 0) {
-                        $fileName = substr($fileName, strlen($this->rootDir) + 1);
+
+                    public function write(string $data, int $channel): void
+                    {
+                        // FIXME: do we also want to parse stdout/stderr?
                     }
 
-                    foreach ($childNode->childNodes as $violationNode) {
-                        if (!$violationNode instanceof DOMElement) {
-                            continue;
+                    public function finish(int $exitCode): void
+                    {
+                        $xmlDocument = new DOMDocument('1.0');
+                        $xmlDocument->load($this->xmlFile);
+                        $rootNode = $xmlDocument->firstChild;
+
+                        if (!$rootNode instanceof DOMNode) {
+                            $this->report->finish(
+                                $exitCode === 0 ? ReportInterface::STATUS_PASSED : ReportInterface::STATUS_FAILED
+                            );
+                            return;
                         }
 
-                        $message = sprintf(
-                            '%s%s(Ruleset: %s, %s)',
-                            trim($violationNode->textContent),
-                            "\n",
-                            $this->getXmlAttribute($violationNode, 'ruleset', ''),
-                            $this->getXmlAttribute($violationNode, 'externalInfoUrl', '')
-                        );
+                        foreach ($rootNode->childNodes as $childNode) {
+                            if (!$childNode instanceof DOMElement || $childNode->nodeName !== 'file') {
+                                continue;
+                            }
 
-                        $report->addDiagnostic(
-                            'error', // FIXME: can we use attr "priority" (int) for severity?
-                            $message,
-                            $fileName,
-                            $this->getIntXmlAttribute($violationNode, 'beginline'),
-                            null,
-                            $this->getXmlAttribute($violationNode, 'rule'),
-                        );
+                            $fileName = $childNode->getAttribute('name');
+                            if (strpos($fileName, $this->rootDir) === 0) {
+                                $fileName = substr($fileName, strlen($this->rootDir) + 1);
+                            }
+
+                            foreach ($childNode->childNodes as $violationNode) {
+                                if (!$violationNode instanceof DOMElement) {
+                                    continue;
+                                }
+
+                                $message = sprintf(
+                                    '%s%s(Ruleset: %s, %s)',
+                                    trim($violationNode->textContent),
+                                    "\n",
+                                    $this->getXmlAttribute($violationNode, 'ruleset', ''),
+                                    $this->getXmlAttribute($violationNode, 'externalInfoUrl', '')
+                                );
+
+                                $this->report->addDiagnostic(
+                                    'error', // FIXME: can we use attr "priority" (int) for severity?
+                                    $message,
+                                    $fileName,
+                                    $this->getIntXmlAttribute($violationNode, 'beginline'),
+                                    null,
+                                    $this->getXmlAttribute($violationNode, 'rule'),
+                                );
+                            }
+                        }
+
+                        $this->report->finish($exitCode === 0 ? ReportInterface::STATUS_PASSED : ReportInterface::STATUS_FAILED);
                     }
-                }
-                $report->finish($exitCode === 0 ? ReportInterface::STATUS_PASSED : ReportInterface::STATUS_FAILED);
-            }
 
-            /**
-             * @param mixed $defaultValue
-             */
-            private function getXmlAttribute(
-                DOMElement $element,
-                string $attribute,
-                ?string $defaultValue = null
-            ): ?string {
-                if ($element->hasAttribute($attribute)) {
-                    return $element->getAttribute($attribute);
-                }
+                    /**
+                     * @param mixed $defaultValue
+                     */
+                    private function getXmlAttribute(
+                        DOMElement $element,
+                        string $attribute,
+                        ?string $defaultValue = null
+                    ): ?string {
+                        if ($element->hasAttribute($attribute)) {
+                            return $element->getAttribute($attribute);
+                        }
 
-                return $defaultValue;
-            }
+                        return $defaultValue;
+                    }
 
-            private function getIntXmlAttribute(DOMElement $element, string $attribute): ?int
-            {
-                $value = $this->getXmlAttribute($element, $attribute);
-                if ($value === null) {
-                    return null;
-                }
+                    private function getIntXmlAttribute(DOMElement $element, string $attribute): ?int
+                    {
+                        $value = $this->getXmlAttribute($element, $attribute);
+                        if ($value === null) {
+                            return null;
+                        }
 
-                return (int) $value;
+                        return (int) $value;
+                    }
+                };
             }
         };
     }
