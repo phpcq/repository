@@ -48,6 +48,9 @@ class BuildConfigBuilder
      */
     private $artifactOutputPath;
 
+    /** @var string[] */
+    private $tempFiles;
+
     private $taskFactory;
 
     public function __construct(TestCase $testCase)
@@ -69,6 +72,13 @@ class BuildConfigBuilder
     public function buildTempDir(string $tempDir = self::BUILD_TEMP_DIR): self
     {
         $this->buildTempDir = $tempDir;
+
+        return $this;
+    }
+
+    public function requestsTempFiles(... $fileNames): self
+    {
+        $this->tempFiles = $fileNames;
 
         return $this;
     }
@@ -99,6 +109,15 @@ class BuildConfigBuilder
         $this->config
             ->method('getProjectConfiguration')
             ->willReturn($this->getProjectConfiguration());
+
+        if (null !== $this->tempFiles) {
+            $this->config
+                ->expects($this->testCase->exactly(count($this->tempFiles)))
+                ->method('getUniqueTempFile')
+                ->willReturnOnConsecutiveCalls(...$this->tempFiles);
+        } else {
+            $this->config->expects($this->testCase->never())->method('getUniqueTempFile');
+        }
 
         if (null !== $this->buildTempDir) {
             $this->config
