@@ -73,7 +73,7 @@ return new class implements ConfigurationPluginInterface {
             $args[] = $values;
         }
 
-        $tmpfile = $tmpfile = $buildConfig->getUniqueTempFile($this);
+        $tmpfile = $tmpfile = $buildConfig->getUniqueTempFile($this, 'xml');
         $args[] = '--report-file';
         $args[] = $tmpfile;
 

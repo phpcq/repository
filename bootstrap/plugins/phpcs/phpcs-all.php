@@ -29,7 +29,7 @@ return new class implements ConfigurationPluginInterface {
     {
         $projectRoot = $buildConfig->getProjectConfiguration()->getProjectRootPath();
         foreach ($config['directories'] as $directory => $directoryConfig) {
-            $tmpfile = $buildConfig->getUniqueTempFile($this, 'checkstyle');
+            $tmpfile = $buildConfig->getUniqueTempFile($this, 'checkstyle.xml');
 
             yield $buildConfig
                 ->getTaskFactory()

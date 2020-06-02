@@ -28,7 +28,7 @@ return new class implements ConfigurationPluginInterface {
     public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
     {
         $projectRoot = $buildConfig->getProjectConfiguration()->getProjectRootPath();
-        $tmpfile     = $buildConfig->getUniqueTempFile($this) . '.checkstyle.xml';
+        $tmpfile     = $buildConfig->getUniqueTempFile($this, 'checkstyle.xml');
 
         yield $buildConfig
             ->getTaskFactory()
