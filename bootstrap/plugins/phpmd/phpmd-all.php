@@ -121,7 +121,7 @@ return new class implements ConfigurationPluginInterface {
 
     private function createPostProcessor(string $xmlFile, string $rootDir): PostProcessorInterface
     {
-        return new class($xmlFile, $rootDir) implements PostProcessorInterface {
+        return new class ($xmlFile, $rootDir) implements PostProcessorInterface {
             private $xmlFile;
             private $rootDir;
 
@@ -131,8 +131,12 @@ return new class implements ConfigurationPluginInterface {
                 $this->rootDir = $rootDir;
             }
 
-            public function process(ToolReportInterface $report, string $consoleOutput, int $exitCode, OutputInterface $output): void
-            {
+            public function process(
+                ToolReportInterface $report,
+                string $consoleOutput,
+                int $exitCode,
+                OutputInterface $output
+            ): void {
                 $xmlDocument = new DOMDocument('1.0');
                 $xmlDocument->load($this->xmlFile);
                 $rootNode = $xmlDocument->firstChild;
@@ -181,8 +185,11 @@ return new class implements ConfigurationPluginInterface {
             /**
              * @param mixed $defaultValue
              */
-            private function getXmlAttribute(DOMElement $element, string $attribute, ?string $defaultValue = null): ?string
-            {
+            private function getXmlAttribute(
+                DOMElement $element,
+                string $attribute,
+                ?string $defaultValue = null
+            ): ?string {
                 if ($element->hasAttribute($attribute)) {
                     return $element->getAttribute($attribute);
                 }

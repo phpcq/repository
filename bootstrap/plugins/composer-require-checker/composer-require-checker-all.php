@@ -55,7 +55,7 @@ return new class implements ConfigurationPluginInterface {
 
     private function createOutputTransformer(string $composerFile): OutputTransformerInterface
     {
-        return new class($composerFile) implements OutputTransformerInterface {
+        return new class ($composerFile) implements OutputTransformerInterface {
             /** @var string */
             private $composerFile;
             /** @var BufferedLineReader */
@@ -102,10 +102,12 @@ return new class implements ConfigurationPluginInterface {
 
                     // If it is the usage suffix, ignore it.
                     // check [--config-file CONFIG-FILE] [--ignore-parse-errors] [--] [<composer-json>]
-                    if (preg_match(
-                        '#check \[--config-file CONFIG-FILE] \[--ignore-parse-errors] \[--] \[<composer-json>]#',
-                        $line
-                    )) {
+                    if (
+                        preg_match(
+                            '#check \[--config-file CONFIG-FILE] \[--ignore-parse-errors] \[--] \[<composer-json>]#',
+                            $line
+                        )
+                    ) {
                         continue;
                     }
 
@@ -145,11 +147,13 @@ return new class implements ConfigurationPluginInterface {
                         */
 
                         // Strip table head.
-                        foreach ([
-                            '#^\+-*\+-*\+$#',
-                            '#\|\s*unknown symbol\s*\|\s*guessed dependency\s*\|#',
-                            '#^\+-*\+-*\+$#',
-                        ] as $regex) {
+                        foreach (
+                            [
+                                '#^\+-*\+-*\+$#',
+                                '#\|\s*unknown symbol\s*\|\s*guessed dependency\s*\|#',
+                                '#^\+-*\+-*\+$#',
+                            ] as $regex
+                        ) {
                             if (1 !== preg_match($regex, $line = $this->data->fetch())) {
                                 throw new \RuntimeException('Failed to parse line: ' . $line);
                             }

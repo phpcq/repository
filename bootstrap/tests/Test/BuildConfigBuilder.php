@@ -76,7 +76,7 @@ class BuildConfigBuilder
         return $this;
     }
 
-    public function requestsTempFiles(... $fileNames): self
+    public function requestsTempFiles(...$fileNames): self
     {
         $this->tempFiles = $fileNames;
 

@@ -44,7 +44,7 @@ return new class implements ConfigurationPluginInterface {
         string $directory,
         array $config,
         string $tempFile
-    ) : array {
+    ): array {
         $arguments = [];
 
         if (isset($config['standard'])) {

@@ -37,7 +37,7 @@ return new class implements ConfigurationPluginInterface {
             ->getTaskFactory()
             ->buildRunPhar('phpunit', $args)
             ->withWorkingDirectory($projectRoot)
-            ->withPostProcessor(new class($logFile, $projectRoot) implements PostProcessorInterface {
+            ->withPostProcessor(new class ($logFile, $projectRoot) implements PostProcessorInterface {
                 private $logFile;
                 private $rootDir;
 
@@ -55,7 +55,9 @@ return new class implements ConfigurationPluginInterface {
                 ): void {
                     $report->addAttachment($this->logFile, 'junit-log.xml');
                     JUnitReportAppender::appendTo($report, $this->logFile, $this->rootDir);
-                    $report->finish($exitCode === 0 ? ToolReportInterface::STATUS_PASSED : ToolReportInterface::STATUS_FAILED);
+                    $report->finish(
+                        $exitCode === 0 ? ToolReportInterface::STATUS_PASSED : ToolReportInterface::STATUS_FAILED
+                    );
                 }
             })
             ->build();

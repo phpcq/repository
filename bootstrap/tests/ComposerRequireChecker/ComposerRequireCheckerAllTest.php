@@ -207,12 +207,17 @@ class ComposerRequireCheckerAllTest extends BootstrapTestCase
         $builder
             ->expects($this->once())
             ->method('withOutputTransformer')
-            ->willReturnCallback(function (OutputTransformerInterface $transformer) use (&$outputTransformer, $builder) {
-                $outputTransformer = $transformer;
+            ->willReturnCallback(
+                function (OutputTransformerInterface $transformer) use (&$outputTransformer, $builder) {
+                    $outputTransformer = $transformer;
 
-                return $builder;
-        });
-        $builder->expects($this->once())->method('build')->willReturn($this->getMockForAbstractClass(TaskRunnerInterface::class));
+                    return $builder;
+                }
+            );
+        $builder
+            ->expects($this->once())
+            ->method('build')
+            ->willReturn($this->getMockForAbstractClass(TaskRunnerInterface::class));
 
         $taskFactory = $this->getMockForAbstractClass(TaskFactoryInterface::class);
         $taskFactory->expects($this->once())->method('buildRunPhar')->willReturn($builder);

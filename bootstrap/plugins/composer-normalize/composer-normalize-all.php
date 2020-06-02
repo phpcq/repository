@@ -72,7 +72,7 @@ return new class implements ConfigurationPluginInterface {
 
     private function createPostProcessor(string $composerFile): PostProcessorInterface
     {
-        return new class($composerFile) implements PostProcessorInterface {
+        return new class ($composerFile) implements PostProcessorInterface {
             private $composerFile;
 
             public function __construct(string $composerFile)
