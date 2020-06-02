@@ -33,14 +33,18 @@ return new class implements ConfigurationPluginInterface {
 
     public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
     {
+        $composerJson = $config['file'] ?? 'composer.json';
+        assert(is_string($composerJson));
+
         yield $buildConfig
             ->getTaskFactory()
             ->buildRunPhar('composer-normalize', $this->buildArguments($config))
             ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
-            ->withPostProcessor($this->createPostProcessor($config['file'] ?? 'composer.json'))
+            ->withPostProcessor($this->createPostProcessor($composerJson))
             ->build();
     }
 
+    /** @return string[] */
     private function buildArguments(array $config): array
     {
         $arguments = [];
