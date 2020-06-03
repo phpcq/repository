@@ -61,5 +61,12 @@
       "file": "composer-normalize/composer-normalize-all.php",
       "plugin-version": "1.0.0"
     }
+  ],
+  "phpspec": [
+    {
+      "constraint": "*",
+      "file": "phpspec/phpspec-all.php",
+      "plugin-version": "1.0.0"
+    }
   ]
 }
