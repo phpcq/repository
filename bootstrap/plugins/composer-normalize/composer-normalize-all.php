@@ -114,7 +114,7 @@ return new class implements ConfigurationPluginInterface {
                     public function finish(int $exitCode): void
                     {
                         $this->process(
-                            0 === $exitCode ? ToolReportInterface::SEVERITY_ERROR : ToolReportInterface::SEVERITY_INFO
+                            0 === $exitCode ? ToolReportInterface::SEVERITY_INFO : ToolReportInterface::SEVERITY_ERROR
                         );
                         $this->report->finish(0 === $exitCode
                             ? ReportInterface::STATUS_PASSED
