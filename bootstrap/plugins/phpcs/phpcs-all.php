@@ -35,7 +35,7 @@ return new class implements ConfigurationPluginInterface {
                 ->getTaskFactory()
                 ->buildRunPhar('phpcs', $this->buildArguments($directory, $directoryConfig ?: $config, $tmpfile))
                 ->withWorkingDirectory($projectRoot)
-                ->withOutputTransformer(CheckstyleReportAppender::transform($tmpfile, $projectRoot))
+                ->withOutputTransformer(CheckstyleReportAppender::transformFile($tmpfile, $projectRoot))
                 ->build();
         }
     }

@@ -34,7 +34,7 @@ return new class implements ConfigurationPluginInterface {
             ->getTaskFactory()
             ->buildRunPhar('psalm', $this->buildArguments($config, $tmpfile))
             ->withWorkingDirectory($projectRoot)
-            ->withOutputTransformer(CheckstyleReportAppender::transform($tmpfile, $projectRoot))
+            ->withOutputTransformer(CheckstyleReportAppender::transformFile($tmpfile, $projectRoot))
             ->build();
     }
 
