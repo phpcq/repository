@@ -190,14 +190,14 @@ return new class implements ConfigurationPluginInterface {
                                     $this->getXmlAttribute($violationNode, 'externalInfoUrl', '')
                                 );
 
-                                $this->report->addDiagnostic(
-                                    'error', // FIXME: can we use attr "priority" (int) for severity?
-                                    $message,
-                                    $fileName,
-                                    $this->getIntXmlAttribute($violationNode, 'beginline'),
-                                    null,
-                                    $this->getXmlAttribute($violationNode, 'rule'),
-                                );
+                                $this->report
+                                    // FIXME: can we use attr "priority" (int) for severity?
+                                    ->addDiagnostic('error', $message)
+                                        ->forFile($fileName)
+                                            ->forRange($this->getIntXmlAttribute($violationNode, 'beginline'))
+                                            ->end()
+                                        ->fromSource($this->getXmlAttribute($violationNode, 'rule'))
+                                    ->end();
                             }
                         }
 

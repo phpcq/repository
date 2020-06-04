@@ -140,9 +140,12 @@ return new class implements ConfigurationPluginInterface {
                                     $countEmpty = 0;
                                     $error .= $line;
                                 }
-                                $this->report->addDiagnostic('error', $error, $this->composerFile);
+                                $this->report
+                                    ->addDiagnostic('error', $error)
+                                        ->forFile($this->composerFile)
+                                        ->end()
+                                    ->end();
                             }
-
 
                             // Missing dependencies found, parse the table.
                             if (preg_match('#The following unknown symbols were found:#', $line)) {
@@ -192,30 +195,37 @@ return new class implements ConfigurationPluginInterface {
                                     $dependencies[$dependency][] = $symbol;
                                 }
                                 foreach ($dependencies as $dependency => $symbols) {
-                                    $this->report->addDiagnostic(
+                                $this->report
+                                    ->addDiagnostic(
                                         'error',
                                         sprintf(
                                             'Missing dependency "%1$s" (used symbols: "%2$s")',
                                             $dependency,
                                             implode('", "', $symbols)
-                                        ),
-                                        $this->composerFile
-                                    );
+                                        )
+                                    )
+                                        ->forFile($this->composerFile)->end()
+                                    ->end();
                                 }
                                 if (!empty($unknown)) {
-                                    $this->report->addDiagnostic(
-                                        'error',
-                                        sprintf(
-                                            'Unknown symbols found: "%1$s" - is there a dependency missing?',
-                                            implode('", "', $unknown)
-                                        ),
-                                        $this->composerFile
-                                    );
+                                    $this->report
+                                        ->addDiagnostic(
+                                            'error',
+                                            sprintf(
+                                                'Unknown symbols found: "%1$s" - is there a dependency missing?',
+                                                implode('", "', $unknown)
+                                            )
+                                        )
+                                            ->forFile($this->composerFile)->end()
+                                        ->end();
                                 }
                             }
 
                             if (preg_match('#There were no unknown symbols found.#', $line)) {
-                                $this->report->addDiagnostic('info', $line, $this->composerFile);
+                                $this->report
+                                    ->addDiagnostic('error', $line)
+                                        ->forFile($this->composerFile)->end()
+                                    ->end();
                             }
                         }
                     }

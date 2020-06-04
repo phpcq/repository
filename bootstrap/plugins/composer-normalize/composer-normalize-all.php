@@ -130,7 +130,11 @@ return new class implements ConfigurationPluginInterface {
                         while (null !== $line = $this->data->fetch()) {
                             $diagnostic .= $line;
                         }
-                        $this->report->addDiagnostic($severity, $diagnostic, $this->composerFile);
+                        $this->report
+                            ->addDiagnostic($severity, $diagnostic)
+                                ->forFile($this->composerFile)
+                                ->end()
+                            ->end();
                     }
                 };
             }
