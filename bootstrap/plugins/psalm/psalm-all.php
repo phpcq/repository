@@ -19,7 +19,7 @@ return new class implements ConfigurationPluginInterface {
             ->describeBoolOption('shepherd', 'Send data to Shepherd, Psalm\'s GitHub integration tool.')
             ->describeStringOption('shepherd_host', 'Override shepherd host');
 
-        $configOptionsBuilder->describeStringOption(
+        $configOptionsBuilder->describeArrayOption(
             'custom_flags',
             'Any custom flags to pass to phpunit. For valid flags refer to the phpunit documentation.',
         );
@@ -56,8 +56,10 @@ return new class implements ConfigurationPluginInterface {
             }
         }
 
-        if ('' !== ($values = $config['custom_flags'] ?? '')) {
-            $arguments[] = $values;
+        if ([] !== ($values = $config['custom_flags'] ?? [])) {
+            foreach ($values as $value) {
+                $arguments[] = (string) $value;
+            }
         }
 
         $arguments[] = '--report=' . $tempFile;

@@ -29,7 +29,7 @@ return new class implements ConfigurationPluginInterface {
             ]
         );
 
-        $configOptionsBuilder->describeStringOption(
+        $configOptionsBuilder->describeArrayOption(
             'custom_flags',
             'Any custom flags to pass to phpmd.'
         );
@@ -69,8 +69,10 @@ return new class implements ConfigurationPluginInterface {
             }
             $args[] = '--exclude=' . implode(',', $exclude);
         }
-        if ('' !== ($values = $config['custom_flags'] ?? '')) {
-            $args[] = $values;
+        if ([] !== ($values = $config['custom_flags'] ?? [])) {
+            foreach ($values as $value) {
+                $args[] = (string) $value;
+            }
         }
 
         $xmlfile = $xmlfile = $buildConfig->getUniqueTempFile($this, 'xml');

@@ -103,7 +103,7 @@ class PhpCsAllTest extends BootstrapTestCase
                 ],
                 'plugin-config' => [
                     'directories' => ['src' => null, 'test' => null],
-                    'custom_flags' => '--custom-flag',
+                    'custom_flags' => ['--custom-flag'],
                 ],
             ],
             'absorbs all options' => [

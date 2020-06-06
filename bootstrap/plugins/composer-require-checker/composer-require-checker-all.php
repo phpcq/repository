@@ -21,7 +21,7 @@ return new class implements ConfigurationPluginInterface {
             ->describeStringOption('config_file', 'Path to configuration file')
             ->describeStringOption('composer_file', 'Path to the composer.json', 'composer.json');
 
-        $configOptionsBuilder->describeStringOption(
+        $configOptionsBuilder->describeArrayOption(
             'custom_flags',
             'Any custom flags to pass to composer-require-checker. ' .
             'For valid flags refer to the composer-require-checker documentation.',
@@ -53,6 +53,12 @@ return new class implements ConfigurationPluginInterface {
 
         if (isset($config['composer_file'])) {
             $arguments[] = $projectRoot . (string) $config['composer_file'];
+        }
+
+        if ([] !== ($values = $config['custom_flags'] ?? [])) {
+            foreach ($values as $value) {
+                $arguments[] = (string) $value;
+            }
         }
 
         return $arguments;

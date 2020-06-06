@@ -16,7 +16,7 @@ return new class implements ConfigurationPluginInterface {
 
     public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
     {
-        $configOptionsBuilder->describeStringOption(
+        $configOptionsBuilder->describeArrayOption(
             'custom_flags',
             'Any custom flags to pass to phpunit. For valid flags refer to the phpunit documentation.',
         );
@@ -28,8 +28,11 @@ return new class implements ConfigurationPluginInterface {
             '--log-junit',
             $logFile = $buildConfig->getUniqueTempFile($this, 'junit-log.xml')
         ];
-        if (isset($config['custom_flags'])) {
-            $args[] = (string) $config['custom_flags'];
+
+        if ([] !== ($values = $config['custom_flags'] ?? [])) {
+            foreach ($values as $value) {
+                $args[] = (string) $value;
+            }
         }
 
         $projectRoot = $buildConfig->getProjectConfiguration()->getProjectRootPath();

@@ -55,7 +55,7 @@ return new class implements ConfigurationPluginInterface {
             false
         );
 
-        $configOptionsBuilder->describeStringOption(
+        $configOptionsBuilder->describeArrayOption(
             'custom_flags',
             'Any custom flags to pass to phpcpd. For valid flags refer to the phpcpd documentation.'
         );
@@ -99,8 +99,11 @@ return new class implements ConfigurationPluginInterface {
         if ($config['fuzzy'] ?? false) {
             $args[] = '--fuzzy';
         }
-        if ('' !== ($values = $config['custom_flags'] ?? '')) {
-            $args[] = 'custom_flags';
+
+        if ([] !== ($values = $config['custom_flags'] ?? [])) {
+            foreach ($values as $value) {
+                $args[] = (string) $value;
+            }
         }
 
         yield $buildConfig

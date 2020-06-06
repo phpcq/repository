@@ -18,7 +18,7 @@ return new class implements ConfigurationPluginInterface {
     {
         $configOptionsBuilder->describeArrayOption('output', 'List of outputs to use.');
 
-        $configOptionsBuilder->describeStringOption(
+        $configOptionsBuilder->describeArrayOption(
             'custom_flags',
             'Any custom flags to pass to phploc. For valid flags refer to the phploc documentation.'
         );
@@ -38,8 +38,11 @@ return new class implements ConfigurationPluginInterface {
                 $args[] = '--exclude=' . $path;
             }
         }
-        if ('' !== ($values = $config['custom_flags'] ?? '')) {
-            $args[] = 'custom_flags';
+
+        if ([] !== ($values = $config['custom_flags'] ?? [])) {
+            foreach ($values as $value) {
+                $args[] = (string) $value;
+            }
         }
 
         yield $buildConfig

@@ -19,7 +19,7 @@ return new class implements ConfigurationPluginInterface {
             ->describeArrayOption('excluded', 'The excluded files and folders.', [])
         ;
 
-        $configOptionsBuilder->describeStringOption(
+        $configOptionsBuilder->describeArrayOption(
             'custom_flags',
             'Any custom flags to pass to phpcs. For valid flags refer to the cphpcs documentation.',
         );
@@ -55,8 +55,10 @@ return new class implements ConfigurationPluginInterface {
             $arguments[] = '--exclude=' . implode(',', $config['excluded']);
         }
 
-        if (isset($config['custom_flags'])) {
-            $arguments[] = $config['custom_flags'];
+        if ([] !== ($values = $config['custom_flags'] ?? [])) {
+            foreach ($values as $value) {
+                $arguments[] = (string) $value;
+            }
         }
 
         $arguments[] = '--report=checkstyle';
