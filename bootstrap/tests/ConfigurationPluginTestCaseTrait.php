@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace Phpcq\BootstrapTest;
 
+use Phpcq\PluginApi\Version10\BuildConfigInterface;
 use Phpcq\PluginApi\Version10\ConfigurationOptionInterface;
 use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
+use Phpcq\PluginApi\Version10\OutputTransformerFactoryInterface;
+use Phpcq\PluginApi\Version10\OutputTransformerInterface;
+use Phpcq\PluginApi\Version10\TaskFactoryInterface;
+use Phpcq\PluginApi\Version10\TaskRunnerBuilderInterface;
 use Phpcq\PluginApi\Version10\TaskRunnerInterface;
+use Phpcq\PluginApi\Version10\ToolReportInterface;
 
 trait ConfigurationPluginTestCaseTrait
 {
@@ -80,5 +86,48 @@ trait ConfigurationPluginTestCaseTrait
         }
 
         $this->assertSame(count($expected), $count, 'Plugin emitted task count mismatch');
+    }
+
+    /** @SuppressWarnings(PHPMD.UnusedLocalVariable) */
+    public function mockOutputTransformer(
+        array $configurationValues,
+        ToolReportInterface $report
+    ): OutputTransformerInterface {
+        $outputTransformer = null;
+        $builder = $this->getMockForAbstractClass(TaskRunnerBuilderInterface::class);
+        $builder->expects($this->once())->method('withWorkingDirectory')->willReturnSelf();
+        $builder
+            ->expects($this->once())
+            ->method('withOutputTransformer')
+            ->willReturnCallback(
+                function (OutputTransformerFactoryInterface $factory) use (&$outputTransformer, $builder, $report) {
+                    $outputTransformer = $factory->createFor($report);
+
+                    return $builder;
+                }
+            );
+        $builder
+            ->expects($this->once())
+            ->method('build')
+            ->willReturn($this->getMockForAbstractClass(TaskRunnerInterface::class));
+
+        $taskFactory = $this->getMockForAbstractClass(TaskFactoryInterface::class);
+        $taskFactory->expects($this->once())->method('buildRunPhar')->willReturn($builder);
+
+        $buildConfig = $this->getMockForAbstractClass(BuildConfigInterface::class);
+        $buildConfig->expects($this->once())->method('getTaskFactory')->willReturn($taskFactory);
+
+        /** @var ConfigurationPluginInterface $instance */
+        $instance = static::getPluginInstance();
+        $this->assertSame(basename(dirname(static::getBootstrapFile())), $instance->getName());
+
+        // Have to trigger the lazy generator.
+        foreach ($instance->processConfig($configurationValues, $buildConfig) as $item) {
+            break;
+        }
+
+        $this->assertInstanceOf(OutputTransformerInterface::class, $outputTransformer);
+
+        return $outputTransformer;
     }
 }
