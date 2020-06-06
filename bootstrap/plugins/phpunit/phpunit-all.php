@@ -28,8 +28,8 @@ return new class implements ConfigurationPluginInterface {
             '--log-junit',
             $logFile = $buildConfig->getUniqueTempFile($this, 'junit-log.xml')
         ];
-        if ('' !== ($values = $config['custom_flags'] ?? '')) {
-            $args[] = $values;
+        if (isset($config['custom_flags'])) {
+            $args[] = (string) $config['custom_flags'];
         }
 
         $projectRoot = $buildConfig->getProjectConfiguration()->getProjectRootPath();
