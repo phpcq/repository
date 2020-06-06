@@ -79,7 +79,7 @@ return new class implements ConfigurationPluginInterface {
 
                     public function finish(int $exitCode): void
                     {
-                        $this->report->addAttachment($this->logFile, 'junit-log.xml');
+                        $this->report->addAttachment('junit-log.xml')->fromFile($this->logFile)->end();
                         JUnitReportAppender::appendFileTo($this->report, $this->logFile, $this->rootDir);
                         $this->report->finish(
                             $exitCode === 0 ? ToolReportInterface::STATUS_PASSED : ToolReportInterface::STATUS_FAILED
