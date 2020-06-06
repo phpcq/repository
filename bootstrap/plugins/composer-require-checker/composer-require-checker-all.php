@@ -41,17 +41,18 @@ return new class implements ConfigurationPluginInterface {
             ->build();
     }
 
+    /** @psalm-return array<int, string> */
     private function buildArguments(array $config, BuildConfigInterface $buildConfig): array
     {
         $arguments = ['check'];
 
         $projectRoot = $buildConfig->getProjectConfiguration()->getProjectRootPath() . '/';
         if (isset($config['config_file'])) {
-            $arguments[] = '--config-file=' . $projectRoot . $config['config_file'];
+            $arguments[] = '--config-file=' . $projectRoot . (string) $config['config_file'];
         }
 
         if (isset($config['composer_file'])) {
-            $arguments[] = $projectRoot . $config['composer_file'];
+            $arguments[] = $projectRoot . (string) $config['composer_file'];
         }
 
         return $arguments;
@@ -71,6 +72,13 @@ return new class implements ConfigurationPluginInterface {
             public function createFor(ToolReportInterface $report): OutputTransformerInterface
             {
                 return new class ($this->composerFile, $report) implements OutputTransformerInterface {
+
+                    // eg. ComposerRequireChecker 2.1.0@0c66698d487fcb5c66cf07108e2180c818fb2e72
+                    private const REGEX_HEADER = '#ComposerRequireChecker [0-9]*\.[0-9]*\.[0-9]*#';
+
+                    private const REGEX_USAGE_SUMMARY =
+                        '#check \[--config-file CONFIG-FILE] \[--ignore-parse-errors] \[--] \[<composer-json>]#';
+
                     /** @var string */
                     private $composerFile;
                     /** @var BufferedLineReader */
@@ -82,12 +90,11 @@ return new class implements ConfigurationPluginInterface {
                     {
                         $this->composerFile = $composerFile;
                         $this->report       = $report;
-                        $this->data         = new BufferedLineReader();
+                        $this->data         = BufferedLineReader::create();
                     }
 
                     public function write(string $data, int $channel): void
                     {
-                        // Can not single channel, as require checker writes every output to STDOUT except for setup errors.
                         $this->data->push($data);
                     }
 
@@ -97,136 +104,159 @@ return new class implements ConfigurationPluginInterface {
                         $this->report->finish(0 === $exitCode
                             ? ReportInterface::STATUS_PASSED
                             : ReportInterface::STATUS_FAILED);
+                    }
 
-                        $this->report = null;
+                    private function logDiagnostic(string $message, string $severity): void
+                    {
+                        $this->report->addDiagnostic($severity, $message)->forFile($this->composerFile)->end()->end();
                     }
 
                     private function process(): void
                     {
                         // FIXME: this should be a state machine to parse incomplete output but for the moment it works.
-                        while (null !== $line = $this->data->fetch()) {
-                            // If it is the version header, ignore it.
-                            // eg. ComposerRequireChecker 2.1.0@0c66698d487fcb5c66cf07108e2180c818fb2e72
-                            if (preg_match('#ComposerRequireChecker .*#', $line)) {
-                                continue;
-                            }
-
-                            // If it is the usage suffix, ignore it.
-                            // check [--config-file CONFIG-FILE] [--ignore-parse-errors] [--] [<composer-json>]
-                            if (
-                                preg_match(
-                                    '#check \[--config-file CONFIG-FILE] \[--ignore-parse-errors] \[--] \[<composer-json>]#',
-                                    $line
-                                )
-                            ) {
+                        $unknown = [];
+                        while (null !== $line = $this->data->peek()) {
+                            if ($this->isLineIgnored($line)) {
+                                $this->data->fetch();
                                 continue;
                             }
 
                             // Could be notification of missing dependencies.
                             // In LocateComposerPackageDirectDependenciesSourceFiles.php line 52:
-                            if (preg_match('#In LocateComposerPackageDirectDependenciesSourceFiles.php#', $line)) {
-                                $countEmpty = 0;
-                                $error = '';
-                                // Buffer up until two empty lines.
-                                while (null !== $line = $this->data->fetch()) {
-                                    $line = trim($line);
-                                    if (empty($line)) {
-                                        $countEmpty++;
-                                        if (2 === $countEmpty) {
-                                            break;
-                                        }
-                                        continue;
-                                    }
-                                    $countEmpty = 0;
-                                    $error .= $line;
-                                }
-                                $this->report
-                                    ->addDiagnostic('error', $error)
-                                        ->forFile($this->composerFile)
-                                        ->end()
-                                    ->end();
+                            if (preg_match('#In LocateComposerPackageDirectDependenciesSourceFiles\.php#', $line)) {
+                                $this->data->fetch();
+                                $this->processLocateComposerPackageDirectDependenciesSourceFiles();
+                                continue;
                             }
 
                             // Missing dependencies found, parse the table.
                             if (preg_match('#The following unknown symbols were found:#', $line)) {
-                                /*
-                                The following unknown symbols were found:
-                                +----------------+--------------------+
-                                | unknown symbol | guessed dependency |
-                                +----------------+--------------------+
-                                | DOMDocument    | ext-dom            |
-                                | DOMElement     | ext-dom            |
-                                | DOMNode        | ext-dom            |
-                                +----------------+--------------------+
-                                */
-
-                                // Strip table head.
-                                foreach (
-                                    [
-                                        '#^\+-*\+-*\+$#',
-                                        '#\|\s*unknown symbol\s*\|\s*guessed dependency\s*\|#',
-                                        '#^\+-*\+-*\+$#',
-                                    ] as $regex
-                                ) {
-                                    if (1 !== preg_match($regex, $line = $this->data->fetch())) {
-                                        throw new RuntimeException('Failed to parse line: ' . $line);
-                                    }
-                                }
-                                // List missing dependencies.
-                                $dependencies = [];
-                                $unknown      = [];
-                                while (null !== $line = $this->data->fetch()) {
-                                    if (preg_match('#^\+-*\+-*\+$#', $line)) {
-                                        // End of table.
-                                        break;
-                                    }
-                                    if (!preg_match('#\|\s*(?<symbol>.*)\s*\|\s*(?<dependency>.*)?\s*\|#', $line, $matches)) {
-                                        throw new RuntimeException('Failed to parse line: ' . $line);
-                                    }
-                                    $dependency = trim($matches['dependency'] ?? '');
-                                    $symbol     = trim($matches['symbol'] ?? '');
-                                    if ('' === $dependency) {
-                                        $unknown[] = $symbol;
-                                        continue;
-                                    }
-                                    if (!isset($dependencies[$dependency])) {
-                                        $dependencies[$dependency] = [];
-                                    }
-                                    $dependencies[$dependency][] = $symbol;
-                                }
-                                foreach ($dependencies as $dependency => $symbols) {
-                                $this->report
-                                    ->addDiagnostic(
-                                        'error',
-                                        sprintf(
-                                            'Missing dependency "%1$s" (used symbols: "%2$s")',
-                                            $dependency,
-                                            implode('", "', $symbols)
-                                        )
-                                    )
-                                        ->forFile($this->composerFile)->end()
-                                    ->end();
-                                }
-                                if (!empty($unknown)) {
-                                    $this->report
-                                        ->addDiagnostic(
-                                            'error',
-                                            sprintf(
-                                                'Unknown symbols found: "%1$s" - is there a dependency missing?',
-                                                implode('", "', $unknown)
-                                            )
-                                        )
-                                            ->forFile($this->composerFile)->end()
-                                        ->end();
-                                }
+                                $this->data->fetch();
+                                $this->processMissingSymbols();
+                                continue;
                             }
 
-                            if (preg_match('#There were no unknown symbols found.#', $line)) {
-                                $this->report
-                                    ->addDiagnostic('error', $line)
-                                        ->forFile($this->composerFile)->end()
-                                    ->end();
+                            if (preg_match('#There were no unknown symbols found\.#', $line)) {
+                                $this->data->fetch();
+                                $this->logDiagnostic($line, 'info');
+                                continue;
                             }
+                            $unknown[] = $line;
+                            $this->data->fetch();
+                        }
+                        if ([] !== $unknown) {
+                            $this->logDiagnostic(
+                                'Did not understand the following output from composer-require-checker: ' .
+                                implode("\n", $unknown),
+                                'warning'
+                            );
+                            $this->report
+                                ->addAttachment('composer-require-checker.log')
+                                    ->fromString($this->data->getData())
+                                ->end();
+                        }
+                    }
+
+                    private function isLineIgnored(string $line): bool
+                    {
+                        if ('' === $line) {
+                            return true;
+                        }
+                        // If it is the version header, ignore it.
+                        if (preg_match(self::REGEX_HEADER, $line)) {
+                            return true;
+                        }
+
+                        // If it is the usage suffix, ignore it.
+                        if (preg_match(self::REGEX_USAGE_SUMMARY, $line)) {
+                            $this->data->fetch();
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    private function processLocateComposerPackageDirectDependenciesSourceFiles(): void
+                    {
+                        // Format is:
+                        // \n\n<message>\n
+                        $error = '';
+                        // Buffer up until two empty lines.
+                        while (null !== $line = $this->data->fetch()) {
+                            if (!$this->isLineIgnored($line)) {
+                                $error .= $line;
+                            }
+                        }
+                        if ('' !== $error) {
+                            $this->logDiagnostic($error, 'error');
+                        }
+                    }
+
+                    private function processMissingSymbols(): void
+                    {
+                        /*
+                         * The following unknown symbols were found:
+                         * +----------------+--------------------+
+                         * | unknown symbol | guessed dependency |
+                         * +----------------+--------------------+
+                         * | DOMDocument    | ext-dom            |
+                         * | DOMElement     | ext-dom            |
+                         * | DOMNode        | ext-dom            |
+                         * +----------------+--------------------+
+                        */
+
+                        // Strip table head.
+                        foreach (
+                            [
+                                '#^\+-*\+-*\+$#',
+                                '#\|\s*unknown symbol\s*\|\s*guessed dependency\s*\|#',
+                                '#^\+-*\+-*\+$#',
+                            ] as $regex
+                        ) {
+                            if (1 !== preg_match($regex, $line = (string) $this->data->fetch())) {
+                                throw new RuntimeException('Failed to parse line: ' . $line);
+                            }
+                        }
+                        // List missing dependencies.
+                        $dependencies = [];
+                        $unknown      = [];
+                        while (null !== $line = $this->data->fetch()) {
+                            if (preg_match('#^\+-*\+-*\+$#', $line)) {
+                                // End of table.
+                                break;
+                            }
+                            if (!preg_match('#\|\s*(?<symbol>.*)\s*\|\s*(?<dependency>.*)?\s*\|#', $line, $matches)) {
+                                throw new RuntimeException('Failed to parse line: ' . $line);
+                            }
+                            $dependency = trim($matches['dependency'] ?? '');
+                            $symbol     = trim($matches['symbol'] ?? '');
+                            if ('' === $dependency) {
+                                $unknown[] = $symbol;
+                                continue;
+                            }
+                            if (!isset($dependencies[$dependency])) {
+                                $dependencies[$dependency] = [];
+                            }
+                            $dependencies[$dependency][] = $symbol;
+                        }
+                        foreach ($dependencies as $dependency => $symbols) {
+                            $this->logDiagnostic(
+                                sprintf(
+                                    'Missing dependency "%1$s" (used symbols: "%2$s")',
+                                    $dependency,
+                                    implode('", "', $symbols)
+                                ),
+                                'error'
+                            );
+                        }
+                        if (!empty($unknown)) {
+                            $this->logDiagnostic(
+                                sprintf(
+                                    'Unknown symbols found: "%1$s" - is there a dependency missing?',
+                                    implode('", "', $unknown)
+                                ),
+                                'error'
+                            );
                         }
                     }
                 };

@@ -7,13 +7,9 @@ namespace Phpcq\BootstrapTest\ComposerRequireChecker;
 use Phpcq\BootstrapTest\BootstrapTestCase;
 use Phpcq\BootstrapTest\Test\BuildConfigBuilder;
 use Phpcq\BootstrapTest\ConfigurationPluginTestCaseTrait;
-use Phpcq\PluginApi\Version10\BuildConfigInterface;
-use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
 use Phpcq\PluginApi\Version10\OutputInterface;
-use Phpcq\PluginApi\Version10\OutputTransformerInterface;
-use Phpcq\PluginApi\Version10\TaskFactoryInterface;
-use Phpcq\PluginApi\Version10\TaskRunnerBuilderInterface;
-use Phpcq\PluginApi\Version10\TaskRunnerInterface;
+use Phpcq\PluginApi\Version10\Report\DiagnosticBuilderInterface;
+use Phpcq\PluginApi\Version10\Report\FileDiagnosticBuilderInterface;
 use Phpcq\PluginApi\Version10\ToolReportInterface;
 
 class ComposerRequireCheckerAllTest extends BootstrapTestCase
@@ -98,11 +94,13 @@ class ComposerRequireCheckerAllTest extends BootstrapTestCase
     {
         return [
             [
+                'status'   => ToolReportInterface::STATUS_FAILED,
                 'expected' => [
                     [
-                        'error',
-                        'The composer dependencies have not been installed, run composer install/update first',
-                        'composer.json',
+                        'severity' => 'error',
+                        'message'  => 'The composer dependencies have not been installed, run composer ' .
+                            'install/update first',
+                        'forFile'  => 'composer.json',
                     ],
                 ],
                 'input'    => <<<EOF
@@ -117,26 +115,27 @@ class ComposerRequireCheckerAllTest extends BootstrapTestCase
                 EOF
             ],
             [
+                'status'   => ToolReportInterface::STATUS_PASSED,
                 'expected' => [
                     [
-                        'info',
-                        'There were no unknown symbols found.',
-                        'composer.json',
+                        'severity' => 'info',
+                        'message'  => 'There were no unknown symbols found.',
+                        'forFile'  => 'composer.json',
                     ],
                 ],
                 'input'    => <<<EOF
                 ComposerRequireChecker 2.1.0@0c66698d487fcb5c66cf07108e2180c818fb2e72
-
                 There were no unknown symbols found.
 
                 EOF
             ],
             [
+                'status'   => ToolReportInterface::STATUS_FAILED,
                 'expected' => [
                     [
-                        'error',
-                        'Missing dependency "ext-dom" (used symbols: "DOMDocument", "DOMElement", "DOMNode")',
-                        'composer.json',
+                        'severity' => 'error',
+                        'message'  => 'Missing dependency "ext-dom" (used symbols: "DOMDocument", "DOMElement")',
+                        'forFile'  => 'composer.json',
                     ],
                 ],
                 'input'    => <<<EOF
@@ -147,22 +146,22 @@ class ComposerRequireCheckerAllTest extends BootstrapTestCase
                 +----------------+--------------------+
                 | DOMDocument    | ext-dom            |
                 | DOMElement     | ext-dom            |
-                | DOMNode        | ext-dom            |
                 +----------------+--------------------+
 
                 EOF
             ],
             [
+                'status'   => ToolReportInterface::STATUS_FAILED,
                 'expected' => [
                     [
-                        'error',
-                        'Missing dependency "ext-dom" (used symbols: "DOMDocument", "DOMElement", "DOMNode")',
-                        'composer.json',
+                        'severity' => 'error',
+                        'message'  => 'Missing dependency "ext-dom" (used symbols: "DOMDocument", "DOMElement")',
+                        'forFile'  => 'composer.json',
                     ],
                     [
-                        'error',
-                        'Unknown symbols found: "Foo\Bar\Baz" - is there a dependency missing?',
-                        'composer.json',
+                        'severity' => 'error',
+                        'message'  => 'Unknown symbols found: "Foo\Bar\Baz" - is there a dependency missing?',
+                        'forFile'  => 'composer.json',
                     ],
                 ],
                 'input'    => <<<EOF
@@ -173,7 +172,6 @@ class ComposerRequireCheckerAllTest extends BootstrapTestCase
                 +----------------+--------------------+
                 | DOMDocument    | ext-dom            |
                 | DOMElement     | ext-dom            |
-                | DOMNode        | ext-dom            |
                 | Foo\Bar\Baz    |                    |
                 +----------------+--------------------+
 
@@ -183,59 +181,45 @@ class ComposerRequireCheckerAllTest extends BootstrapTestCase
     }
 
     /** @dataProvider outputTransformProvider */
-    public function testTransformsOutput(array $expected, string $input): void
+    public function testTransformsOutput(string $expectedStatus, array $expected, string $input): void
     {
-        $transformer = $this->mockOutputTransformer([]);
+        $report      = $this->getMockForAbstractClass(ToolReportInterface::class);
+        $transformer = $this->mockOutputTransformer([], $report);
 
-        $report = $this->getMockForAbstractClass(ToolReportInterface::class);
-        $report
-            ->expects($this->exactly(count($expected)))
-            ->method('addDiagnostic')
-            ->withConsecutive(...$expected);
+        $report->expects($this->once())->method('finish')->with($expectedStatus);
 
-        $transformer->attach($report);
-        $transformer->write($input, OutputInterface::CHANNEL_STDOUT);
-        $transformer->detach(0);
-    }
+        $expectedParameters = [];
+        $expectedReturn     = [];
+        foreach ($expected as $expectedValue) {
+            $expectedParameters[] = [
+                'severity' => $expectedValue['severity'],
+                'message'  => $expectedValue['message'],
+            ];
 
-    /** @SuppressWarnings(PHPMD.UnusedLocalVariable) */
-    public function mockOutputTransformer(array $configurationValues): OutputTransformerInterface
-    {
-        $outputTransformer = null;
-        $builder = $this->getMockForAbstractClass(TaskRunnerBuilderInterface::class);
-        $builder->expects($this->once())->method('withWorkingDirectory')->willReturnSelf();
-        $builder
-            ->expects($this->once())
-            ->method('withOutputTransformer')
-            ->willReturnCallback(
-                function (OutputTransformerInterface $transformer) use (&$outputTransformer, $builder) {
-                    $outputTransformer = $transformer;
+            $diagnosticBuilder = $this->getMockForAbstractClass(DiagnosticBuilderInterface::class);
+            $diagnosticBuilder->expects($this->once())->method('end')->willReturn($report);
 
-                    return $builder;
-                }
-            );
-        $builder
-            ->expects($this->once())
-            ->method('build')
-            ->willReturn($this->getMockForAbstractClass(TaskRunnerInterface::class));
+            if (isset($expectedValue['forFile'])) {
+                $fileBuilder = $this->getMockForAbstractClass(FileDiagnosticBuilderInterface::class);
+                $fileBuilder->expects($this->once())->method('end')->willReturn($diagnosticBuilder);
 
-        $taskFactory = $this->getMockForAbstractClass(TaskFactoryInterface::class);
-        $taskFactory->expects($this->once())->method('buildRunPhar')->willReturn($builder);
+                $diagnosticBuilder
+                    ->expects($this->once())
+                    ->method('forFile')
+                    ->with($expectedValue['forFile'])
+                    ->willReturn($fileBuilder);
+            }
 
-        $buildConfig = $this->getMockForAbstractClass(BuildConfigInterface::class);
-        $buildConfig->expects($this->once())->method('getTaskFactory')->willReturn($taskFactory);
-
-        /** @var ConfigurationPluginInterface $instance */
-        $instance = static::getPluginInstance();
-        $this->assertSame(basename(dirname(static::getBootstrapFile())), $instance->getName());
-
-        // Have to trigger the lazy generator.
-        foreach ($instance->processConfig($configurationValues, $buildConfig) as $item) {
-            break;
+            $expectedReturn[] = $diagnosticBuilder;
         }
 
-        $this->assertInstanceOf(OutputTransformerInterface::class, $outputTransformer);
+        $report
+            ->expects($this->exactly(count($expectedParameters)))
+            ->method('addDiagnostic')
+            ->withConsecutive(...$expectedParameters)
+            ->willReturnOnConsecutiveCalls(...$expectedReturn);
 
-        return $outputTransformer;
+        $transformer->write($input, OutputInterface::CHANNEL_STDOUT);
+        $transformer->finish($expectedStatus === ToolReportInterface::STATUS_PASSED ? 0 : 1);
     }
 }
