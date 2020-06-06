@@ -184,26 +184,72 @@ return new class implements ConfigurationPluginInterface {
                                     continue;
                                 }
 
+                                /*
+                                 * <violation> may have:
+                                 * beginline: starting line of the issue.
+                                 * endline:   ending line of the issue.
+                                 * rule:      name of the rule.
+                                 * ruleset:   name of the ruleset the rule is defined within.
+                                 * package:   namespace of the class where the issue is within.
+                                 * class:     name of the class where the issue is within.
+                                 * method:    name of the method where the issue is within.
+                                 * externalInfoUrl: external URL describing the violation.
+                                 * priority: The priority for the rule.
+                                 *           This can be a value in the range 1-5, where 1 is the highest priority and
+                                 *           5 the lowest priority.
+                                 */
+
                                 $message = sprintf(
                                     '%s%s(Ruleset: %s, %s)',
                                     trim($violationNode->textContent),
                                     "\n",
-                                    $this->getXmlAttribute($violationNode, 'ruleset', ''),
-                                    $this->getXmlAttribute($violationNode, 'externalInfoUrl', '')
+                                    (string) $this->getXmlAttribute($violationNode, 'ruleset', ''),
+                                    (string) $this->getXmlAttribute($violationNode, 'externalInfoUrl', '')
                                 );
 
-                                $this->report
-                                    // FIXME: can we use attr "priority" (int) for severity?
-                                    ->addDiagnostic('error', $message)
-                                        ->forFile($fileName)
-                                            ->forRange($this->getIntXmlAttribute($violationNode, 'beginline'))
-                                            ->end()
-                                        ->fromSource($this->getXmlAttribute($violationNode, 'rule'))
+                                $severity = ToolReportInterface::SEVERITY_ERROR;
+                                if (null !== $prio = $this->getIntXmlAttribute($violationNode, 'priority')) {
+                                    // FIXME: Is this mapping correct?
+                                    switch ($prio) {
+                                        case 1:
+                                        case 2:
+                                        case 3:
+                                            $severity = ToolReportInterface::SEVERITY_ERROR;
+                                            break;
+                                        case 4:
+                                            $severity = ToolReportInterface::SEVERITY_WARNING;
+                                            break;
+                                        case 5:
+                                        default:
+                                            $severity = ToolReportInterface::SEVERITY_INFO;
+                                    }
+                                }
+
+                                $beginLine = $this->getIntXmlAttribute($violationNode, 'beginline');
+                                $endLine   = $this->getIntXmlAttribute($violationNode, 'endline');
+                                $this->report->addDiagnostic($severity, $message)
+                                    ->forFile($fileName)
+                                        ->forRange(
+                                            (int) $this->getIntXmlAttribute($violationNode, 'beginline'),
+                                            null,
+                                            $endLine !== $beginLine ? $endLine : null,
+                                        )
+                                        ->end()
+                                    ->fromSource((string) $this->getXmlAttribute($violationNode, 'rule'))
                                     ->end();
                             }
                         }
 
-                        $this->report->finish($exitCode === 0 ? ReportInterface::STATUS_PASSED : ReportInterface::STATUS_FAILED);
+                        $this->report->addAttachment('pmd.xml')
+                                ->fromFile($this->xmlFile)
+                                ->setMimeType('application/xml')
+                            ->end();
+
+                        $this->report->finish(
+                            $exitCode === 0
+                                ? ReportInterface::STATUS_PASSED
+                                : ReportInterface::STATUS_FAILED
+                        );
                     }
 
                     /**
