@@ -3,6 +3,7 @@
 use Phpcq\PluginApi\Version10\BuildConfigInterface;
 use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
+use Phpcq\PluginApi\Version10\OutputInterface;
 use Phpcq\PluginApi\Version10\OutputTransformerFactoryInterface;
 use Phpcq\PluginApi\Version10\OutputTransformerInterface;
 use Phpcq\PluginApi\Version10\ReportInterface;
@@ -30,7 +31,7 @@ return new class implements ConfigurationPluginInterface {
                 'Indent style (one of "space", "tab"); should be used with the indent_size option',
                 'space'
             )
-            ->describeStringOption('no_update_lock', 'Path to the composer.json', 'composer.json');
+            ->describeBoolOption('no_update_lock', 'Do not update lock file if it exists');
     }
 
     public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
@@ -46,13 +47,13 @@ return new class implements ConfigurationPluginInterface {
             ->build();
     }
 
-    /** @return string[] */
+    /** @psalm-return list<string> */
     private function buildArguments(array $config): array
     {
         $arguments = [];
 
         if (isset($config['file'])) {
-            $arguments[] = $config['file'];
+            $arguments[] = (string) $config['file'];
         }
 
         if (!isset($config['dry_run']) || $config['dry_run']) {
@@ -61,12 +62,12 @@ return new class implements ConfigurationPluginInterface {
 
         if (isset($config['indent_size'])) {
             $arguments[] = '--indent-size';
-            $arguments[] = $config['indent_size'];
+            $arguments[] = (string) $config['indent_size'];
         }
 
         if (isset($config['indent_style'])) {
             $arguments[] = '--indent-style';
-            $arguments[] = $config['indent_style'];
+            $arguments[] = (string) $config['indent_style'];
         }
 
         if (isset($config['no_update_lock'])) {
@@ -75,7 +76,6 @@ return new class implements ConfigurationPluginInterface {
 
         return $arguments;
     }
-
 
     private function createOutputTransformerFactory(string $composerFile): OutputTransformerFactoryInterface
     {
@@ -91,10 +91,22 @@ return new class implements ConfigurationPluginInterface {
             public function createFor(ToolReportInterface $report): OutputTransformerInterface
             {
                 return new class ($this->composerFile, $report) implements OutputTransformerInterface {
+                    private const REGEX_IN_APPLICATION = '#^In Application\.php line [0-9]*:$#';
+                    private const REGEX_NOT_WRITABLE = '#^.* is not writable\.$#';
+                    private const REGEX_NOT_NORMALIZED = '#^.* is not normalized\.$#';
+                    private const REGEX_IS_NORMALIZED = '#^.* is already normalized\.$#';
+                    private const REGEX_XDEBUG_ENABLED = '#^(?<message>You are running composer with Xdebug enabled\.' .
+                    ' This has a major impact on runtime performance\. See https://getcomposer.org/xdebug)$#';
+                    private const REGEX_LOCK_OUTDATED = '#^(?<message>The lock file is not up to date with the latest' .
+                    ' changes in composer\.json, it is recommended that you run `composer update --lock`\.)$#';
+                    private const REGEX_SCHEMA_VIOLATION = '#^.* does not match the expected JSON schema:$#';
+
                     /** @var string */
                     private $composerFile;
                     /** @var BufferedLineReader */
                     private $data;
+                    /** @var string */
+                    private $diff = '';
                     /** @var ToolReportInterface */
                     private $report;
 
@@ -102,39 +114,141 @@ return new class implements ConfigurationPluginInterface {
                     {
                         $this->composerFile = $composerFile;
                         $this->report       = $report;
-                        $this->data         = new BufferedLineReader();
+                        $this->data         = BufferedLineReader::create();
                     }
 
                     public function write(string $data, int $channel): void
                     {
-                        // Can not single channel, as require checker writes every output to STDOUT except for setup errors.
+                        if (OutputInterface::CHANNEL_STDOUT === $channel) {
+                            // This is the ONLY line that is on output channel instead of error.
+                            if (1 === preg_match(self::REGEX_IS_NORMALIZED, $dummy = trim($data))) {
+                                $this->logDiagnostic(
+                                    $this->composerFile . ' is normalized.',
+                                    ToolReportInterface::SEVERITY_INFO
+                                );
+                                return;
+                            }
+                            $this->diff .= $data;
+                            return;
+                        }
+
                         $this->data->push($data);
                     }
 
                     public function finish(int $exitCode): void
                     {
-                        $this->process(
-                            0 === $exitCode ? ToolReportInterface::SEVERITY_ERROR : ToolReportInterface::SEVERITY_INFO
-                        );
+                        $this->process();
                         $this->report->finish(0 === $exitCode
                             ? ReportInterface::STATUS_PASSED
                             : ReportInterface::STATUS_FAILED);
-
-                        $this->report = null;
                     }
 
-                    private function process(string $severity): void
+                    private function logDiagnostic(string $message, string $severity): void
                     {
-                        // FIXME: should parse the data instead of appending.
-                        $diagnostic = '';
+                        $this->report->addDiagnostic($severity, $message)->forFile($this->composerFile)->end()->end();
+                    }
+
+                    private function process(): void
+                    {
+                        $unknown = [];
                         while (null !== $line = $this->data->fetch()) {
-                            $diagnostic .= $line;
+                            if (!$this->processLine($line)) {
+                                $unknown[] = $line;
+                            }
                         }
-                        $this->report
-                            ->addDiagnostic($severity, $diagnostic)
-                                ->forFile($this->composerFile)
-                                ->end()
-                            ->end();
+
+                        if ([] !== $unknown) {
+                            $this->logDiagnostic(
+                                'Did not understand the following tool output: ' . "\n" .
+                                implode("\n", $unknown),
+                                'warning'
+                            );
+                            $this->report
+                                ->addAttachment('composer-normalize-raw.txt')
+                                ->fromString($this->data->getData())
+                                ->end();
+                        }
+
+                        if ('' !== $this->diff) {
+                            $this->report
+                                ->addAttachment('composer.json-normalized.diff')
+                                    ->fromString($this->diff)
+                                ->end();
+                        }
+                    }
+
+                    private function processLine(string $line): bool
+                    {
+                        // Never process empty lines.
+                        if (empty($line)) {
+                            return true;
+                        }
+
+                        foreach (
+                            // Regex => callback (...<named match>): void
+                            [
+                                self::REGEX_IN_APPLICATION => function (): void {
+                                    // Ignore header.
+                                },
+                                self::REGEX_NOT_WRITABLE => function (): void {
+                                    $this->logDiagnostic(
+                                        $this->composerFile . ' is not writable.',
+                                        ToolReportInterface::SEVERITY_ERROR
+                                    );
+                                },
+                                self::REGEX_NOT_NORMALIZED => function (): void {
+                                    $this->logDiagnostic(
+                                        $this->composerFile . ' is not normalized.',
+                                        ToolReportInterface::SEVERITY_ERROR
+                                    );
+                                },
+                                self::REGEX_XDEBUG_ENABLED => function (string $message): void {
+                                    $this->logDiagnostic($message, ToolReportInterface::SEVERITY_INFO);
+                                },
+                                self::REGEX_LOCK_OUTDATED => function (string $message): void {
+                                    $this->logDiagnostic($message, ToolReportInterface::SEVERITY_ERROR);
+                                },
+                                self::REGEX_SCHEMA_VIOLATION => function (): void {
+                                    while (null !== $line = $this->data->peek()) {
+                                        if (empty($line)) {
+                                            $this->data->fetch();
+                                            continue;
+                                        }
+                                        if ('-' === $line[0]) {
+                                            $error = substr($line, 2);
+                                            $this->data->fetch();
+                                            // Collect wrapped lines.
+                                            while (null !== $line = $this->data->peek()) {
+                                                if (empty($line)) {
+                                                    break;
+                                                }
+                                                if ('-' !== $line[0]) {
+                                                    $error .= ' ' . $line;
+                                                    $this->data->fetch();
+                                                    continue;
+                                                }
+                                                break;
+                                            }
+                                            $this->logDiagnostic($error, ToolReportInterface::SEVERITY_ERROR);
+                                        }
+                                        if (
+                                            'See https://getcomposer.org/doc/04-schema.md for details on the schema'
+                                            === $line
+                                        ) {
+                                            $this->data->fetch();
+                                            break;
+                                        }
+                                    }
+                                },
+                            ] as $pattern => $handler
+                        ) {
+                            if (1 === preg_match($pattern, $line, $matches)) {
+                                $variables = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+                                call_user_func_array($handler, $variables);
+                                return true;
+                            }
+                        }
+                        return false;
                     }
                 };
             }
