@@ -4,11 +4,11 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c2f49a637e40ffc0e55338426dd22c87",
+    "content-hash": "0fae618c52051eb77bdf67ba79e5c744",
     "packages": [
         {
             "name": "phpcq/plugin-api",
-            "version": "dev-feature/checkstyle",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpcq/plugin-api.git",
