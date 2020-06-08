@@ -174,7 +174,7 @@ return new class implements ConfigurationPluginInterface {
 
                         if ('' !== $this->diff) {
                             $this->report
-                                ->addAttachment('composer.json-normalized.diff')
+                                ->addDiff('composer.json-normalized.diff')
                                     ->fromString($this->diff)
                                 ->end();
                         }
