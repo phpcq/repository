@@ -144,6 +144,20 @@ class ComposerNormalizeAllTest extends BootstrapTestCase
                     "- fake message 1.\n\n" .
                     "See https://getcomposer.org/doc/04-schema.md for details on the schema\n",
             ],
+            'Plugin command is already registered' => [
+                'status'   => ToolReportInterface::STATUS_PASSED,
+                'expected' => [
+                    [
+                        'severity' => 'notice',
+                        'message'  => 'Plugin command normalize (Localheinz\Composer\Normalize\Command'
+                            . '\NormalizeCommand) would override a Composer command and has been skipped',
+                        'forFile'  => 'composer.json',
+                    ],
+                ],
+                'input-stdout' => '',
+                'input-stderr' => 'Plugin command normalize (Localheinz\Composer\Normalize\Command'
+                    . '\NormalizeCommand) would override a Composer command and has been skipped' . "\n"
+            ],
         ];
     }
 
