@@ -163,7 +163,7 @@ return new class implements ConfigurationPluginInterface {
                         $rootNode = $xmlDocument->firstChild;
 
                         if (!$rootNode instanceof DOMNode) {
-                            $this->report->finish(
+                            $this->report->close(
                                 $exitCode === 0 ? ReportInterface::STATUS_PASSED : ReportInterface::STATUS_FAILED
                             );
                             return;
@@ -245,7 +245,7 @@ return new class implements ConfigurationPluginInterface {
                                 ->setMimeType('application/xml')
                             ->end();
 
-                        $this->report->finish(
+                        $this->report->close(
                             $exitCode === 0
                                 ? ReportInterface::STATUS_PASSED
                                 : ReportInterface::STATUS_FAILED

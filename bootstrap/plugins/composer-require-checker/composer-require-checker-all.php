@@ -107,7 +107,7 @@ return new class implements ConfigurationPluginInterface {
                     public function finish(int $exitCode): void
                     {
                         $this->process();
-                        $this->report->finish(0 === $exitCode
+                        $this->report->close(0 === $exitCode
                             ? ReportInterface::STATUS_PASSED
                             : ReportInterface::STATUS_FAILED);
                     }
