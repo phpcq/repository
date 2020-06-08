@@ -60,7 +60,7 @@ jobs:
 ### END TODO REMOVE WHEN phpcq COMPOSER PLUGIN IS READY
 
       - name: Install phpcq toolchain
-        run: $GITHUB_WORKSPACE/${{ env.PHPCQ_DIRECTORY }}/phpcq update -v
+        run: $GITHUB_WORKSPACE/${{ env.PHPCQ_DIRECTORY }}/phpcq install -v
         working-directory: bootstrap
 
       - name: Run tests
