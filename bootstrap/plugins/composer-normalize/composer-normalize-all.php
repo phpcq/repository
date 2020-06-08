@@ -100,9 +100,8 @@ return new class implements ConfigurationPluginInterface {
                     private const REGEX_LOCK_OUTDATED = '#^(?<message>The lock file is not up to date with the latest' .
                     ' changes in composer\.json, it is recommended that you run `composer update --lock`\.)$#';
                     private const REGEX_SCHEMA_VIOLATION = '#^.* does not match the expected JSON schema:$#';
-                    private const REGEX_SKIPPED_COMMAND = '#^(?<message>Plugin command normalize \(Localheinz\\\\' .
-                    'Composer\\\\Normalize\\\\Command\\\\NormalizeCommand\) would override a Composer command and has' .
-                    ' been skipped)#';
+                    private const REGEX_SKIPPED_COMMAND = '#^(?<message>Plugin command normalize \(.*\) would' .
+                    ' override a Composer command and has been skipped)#';
 
                     /** @var string */
                     private $composerFile;
