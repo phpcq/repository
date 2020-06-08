@@ -24,7 +24,7 @@
   "require": {
     "php": "^7.3",
     "ext-dom": "*",
-    "phpcq/plugin-api": "dev-feature/checkstyle"
+    "phpcq/plugin-api": "^1.0@dev"
   },
   "autoload-dev": {
     "psr-4": {
