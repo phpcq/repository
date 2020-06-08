@@ -10,9 +10,9 @@ use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
 use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
 use Phpcq\PluginApi\Version10\OutputTransformerFactoryInterface;
 use Phpcq\PluginApi\Version10\OutputTransformerInterface;
-use Phpcq\PluginApi\Version10\TaskFactoryInterface;
-use Phpcq\PluginApi\Version10\TaskRunnerBuilderInterface;
-use Phpcq\PluginApi\Version10\TaskRunnerInterface;
+use Phpcq\PluginApi\Version10\Task\TaskBuilderInterface;
+use Phpcq\PluginApi\Version10\Task\TaskFactoryInterface;
+use Phpcq\PluginApi\Version10\Task\TaskInterface;
 use Phpcq\PluginApi\Version10\ToolReportInterface;
 
 trait ConfigurationPluginTestCaseTrait
@@ -81,7 +81,7 @@ trait ConfigurationPluginTestCaseTrait
         $count = 0;
         // Iterate over all tasks to trigger the iterator and count the returned instances.
         foreach ($instance->processConfig($configuration, $config) as $item) {
-            $this->assertInstanceOf(TaskRunnerInterface::class, $item);
+            $this->assertInstanceOf(TaskInterface::class, $item);
             $count++;
         }
 
@@ -94,7 +94,7 @@ trait ConfigurationPluginTestCaseTrait
         ToolReportInterface $report
     ): OutputTransformerInterface {
         $outputTransformer = null;
-        $builder = $this->getMockForAbstractClass(TaskRunnerBuilderInterface::class);
+        $builder = $this->getMockForAbstractClass(TaskBuilderInterface::class);
         $builder->expects($this->once())->method('withWorkingDirectory')->willReturnSelf();
         $builder
             ->expects($this->once())
@@ -109,7 +109,7 @@ trait ConfigurationPluginTestCaseTrait
         $builder
             ->expects($this->once())
             ->method('build')
-            ->willReturn($this->getMockForAbstractClass(TaskRunnerInterface::class));
+            ->willReturn($this->getMockForAbstractClass(TaskInterface::class));
 
         $taskFactory = $this->getMockForAbstractClass(TaskFactoryInterface::class);
         $taskFactory->expects($this->once())->method('buildRunPhar')->willReturn($builder);

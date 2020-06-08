@@ -74,3 +74,8 @@ tool-config:
 
   phpcbf:
     <<: *phpcs
+
+  phpcpd:
+    names_exclude:
+      - 'ComposerNormalizeAllTest.php'
+      - 'ComposerRequireCheckerAllTest.php'

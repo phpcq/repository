@@ -2,6 +2,7 @@
 
 namespace Phpcq\BootstrapTest\Test;
 
+use Phpcq\PluginApi\Version10\Task\TaskBuilderInterface;
 use Phpcq\PluginApi\Version10\TaskRunnerBuilderInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -62,10 +63,10 @@ abstract class AbstractTaskRunnerBuilder
         return $this;
     }
 
-    public function getTask(): TaskRunnerBuilderInterface
+    public function getTask(): TaskBuilderInterface
     {
         $mock = $this->mock = $this->testCase
-            ->getMockBuilder(TaskRunnerBuilderInterface::class)
+            ->getMockBuilder(TaskBuilderInterface::class)
             ->getMockForAbstractClass();
         $this->expectCwd();
         $this->expectEnv();

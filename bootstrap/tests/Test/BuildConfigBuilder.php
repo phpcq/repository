@@ -7,7 +7,7 @@ namespace Phpcq\BootstrapTest\Test;
 use LogicException;
 use Phpcq\PluginApi\Version10\BuildConfigInterface;
 use Phpcq\PluginApi\Version10\ProjectConfigInterface;
-use Phpcq\PluginApi\Version10\TaskFactoryInterface;
+use Phpcq\PluginApi\Version10\Task\TaskFactoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 

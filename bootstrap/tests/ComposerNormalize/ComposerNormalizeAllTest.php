@@ -167,7 +167,7 @@ class ComposerNormalizeAllTest extends BootstrapTestCase
         $report      = $this->getMockForAbstractClass(ToolReportInterface::class);
         $transformer = $this->mockOutputTransformer([], $report);
 
-        $report->expects($this->once())->method('finish')->with($expectedStatus);
+        $report->expects($this->once())->method('close')->with($expectedStatus);
 
         $expectedParameters = [];
         $expectedReturn     = [];
