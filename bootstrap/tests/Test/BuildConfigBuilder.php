@@ -128,7 +128,7 @@ class BuildConfigBuilder
     {
         if (null !== $this->tempFiles) {
             $this->config
-                ->expects($this->testCase->exactly(count($this->tempFiles)))
+                ->expects($this->testCase->atLeastOnce(count($this->tempFiles)))
                 ->method('getUniqueTempFile')
                 ->willReturnOnConsecutiveCalls(...$this->tempFiles);
             return;
