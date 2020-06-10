@@ -67,7 +67,7 @@ jobs:
       - name: Rebuild repository
         id: rebuild
         run: |
-          ${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v | tee COMMIT_MSG
+          ${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v --truncate=10000 | tee COMMIT_MSG
           message=$(cat COMMIT_MSG)
           message="${message//'%'/'%25'}"
           message="${message//$'\n'/'%0A'}"
