@@ -51,8 +51,8 @@ jobs:
         with:
           path: ${{ env.BUILDER_DIRECTORY }}/var
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('./sources.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
+#          restore-keys: |
+#            ${{ runner.os }}-build-${{ env.cache-name }}-
 
       - name: Install dependencies
         run: composer install
