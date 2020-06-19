@@ -59,3 +59,9 @@ repositories:
     repository: ergebnis/composer-normalize
     tool_name: composer-normalize
     allowed_versions: ^2.1
+
+  box:
+    type: github
+    repository: humbug/box
+    tool_name: box
+    allowed_versions: ^3.8.4
