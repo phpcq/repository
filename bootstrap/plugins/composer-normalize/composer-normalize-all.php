@@ -1,43 +1,52 @@
 <?php
 
-use Phpcq\PluginApi\Version10\BuildConfigInterface;
-use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
-use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
-use Phpcq\PluginApi\Version10\OutputInterface;
-use Phpcq\PluginApi\Version10\OutputTransformerFactoryInterface;
-use Phpcq\PluginApi\Version10\OutputTransformerInterface;
-use Phpcq\PluginApi\Version10\ReportInterface;
-use Phpcq\PluginApi\Version10\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationBuilderInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationInterface;
+use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
+use Phpcq\PluginApi\Version10\EnvironmentInterface;
+use Phpcq\PluginApi\Version10\Output\OutputInterface;
+use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
+use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
+use Phpcq\PluginApi\Version10\Report\ReportInterface;
+use Phpcq\PluginApi\Version10\Report\ToolReportInterface;
 use Phpcq\PluginApi\Version10\Util\BufferedLineReader;
 
-return new class implements ConfigurationPluginInterface {
+return new class implements DiagnosticsPluginInterface {
     public function getName(): string
     {
         return 'composer-normalize';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
+    public function describeConfiguration(PluginConfigurationBuilderInterface $configOptionsBuilder): void
     {
         $configOptionsBuilder
-            ->describeBoolOption('dry_run', 'Show the results of normalizing, but do not modify any files', true)
-            ->describeStringOption('file', 'Path to composer.json file relative to project root')
+            ->describeBoolOption('dry_run', 'Show the results of normalizing, but do not modify any files')
+            ->isRequired()
+            ->withDefaultValue(true);
+        $configOptionsBuilder->describeStringOption('file', 'Path to composer.json file relative to project root');
+        $configOptionsBuilder
             ->describeIntOption(
                 'indent_size',
-                'Indent size (an integer greater than 0); should be used with the indent_style option',
-                2
+                'Indent size (an integer greater than 0); should be used with the indent_style option'
             )
+            ->isRequired()
+            ->withDefaultValue(2);
+        $configOptionsBuilder
             ->describeStringOption(
                 'indent_style',
-                'Indent style (one of "space", "tab"); should be used with the indent_size option',
-                'space'
+                'Indent style (one of "space", "tab"); should be used with the indent_size option'
             )
+            ->isRequired()
+            ->withDefaultValue('space');
+        $configOptionsBuilder
             ->describeBoolOption('no_update_lock', 'Do not update lock file if it exists');
     }
 
-    public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
-    {
-        $composerJson = $config['file'] ?? 'composer.json';
-        assert(is_string($composerJson));
+    public function createDiagnosticTasks(
+        PluginConfigurationInterface $config,
+        EnvironmentInterface $buildConfig
+    ): iterable {
+        $composerJson = $config->has('file') ? $config->getString('file') : 'composer.json';
 
         yield $buildConfig
             ->getTaskFactory()
@@ -47,30 +56,21 @@ return new class implements ConfigurationPluginInterface {
             ->build();
     }
 
-    /** @psalm-return list<string> */
-    private function buildArguments(array $config): array
+    private function buildArguments(PluginConfigurationInterface $config): array
     {
         $arguments = [];
-
-        if (isset($config['file'])) {
-            $arguments[] = (string) $config['file'];
+        if ($config->has('file')) {
+            $arguments[] = $config->getString('file');
         }
-
-        if (!isset($config['dry_run']) || $config['dry_run']) {
+        if ($config->getBool('dry_run')) {
             $arguments[] = '--dry-run';
         }
+        $arguments[] = '--indent-size';
+        $arguments[] = (string) $config->getInt('indent_size');
+        $arguments[] = '--indent-style';
+        $arguments[] = (string) $config->getString('indent_style');
 
-        if (isset($config['indent_size'])) {
-            $arguments[] = '--indent-size';
-            $arguments[] = (string) $config['indent_size'];
-        }
-
-        if (isset($config['indent_style'])) {
-            $arguments[] = '--indent-style';
-            $arguments[] = (string) $config['indent_style'];
-        }
-
-        if (isset($config['no_update_lock'])) {
+        if ($config->has('no_update_lock')) {
             $arguments[] = '--no-update-lock';
         }
 
@@ -195,20 +195,20 @@ return new class implements ConfigurationPluginInterface {
                                 self::REGEX_NOT_WRITABLE => function (): void {
                                     $this->logDiagnostic(
                                         $this->composerFile . ' is not writable.',
-                                        ToolReportInterface::SEVERITY_ERROR
+                                        ToolReportInterface::SEVERITY_FATAL
                                     );
                                 },
                                 self::REGEX_NOT_NORMALIZED => function (): void {
                                     $this->logDiagnostic(
                                         $this->composerFile . ' is not normalized.',
-                                        ToolReportInterface::SEVERITY_ERROR
+                                        ToolReportInterface::SEVERITY_MAJOR
                                     );
                                 },
                                 self::REGEX_XDEBUG_ENABLED => function (string $message): void {
                                     $this->logDiagnostic($message, ToolReportInterface::SEVERITY_INFO);
                                 },
                                 self::REGEX_LOCK_OUTDATED => function (string $message): void {
-                                    $this->logDiagnostic($message, ToolReportInterface::SEVERITY_ERROR);
+                                    $this->logDiagnostic($message, ToolReportInterface::SEVERITY_MAJOR);
                                 },
                                 self::REGEX_SCHEMA_VIOLATION => function (): void {
                                     while (null !== $line = $this->data->peek()) {
@@ -231,7 +231,7 @@ return new class implements ConfigurationPluginInterface {
                                                 }
                                                 break;
                                             }
-                                            $this->logDiagnostic($error, ToolReportInterface::SEVERITY_ERROR);
+                                            $this->logDiagnostic($error, ToolReportInterface::SEVERITY_FATAL);
                                         }
                                         if (
                                             'See https://getcomposer.org/doc/04-schema.md for details on the schema'
@@ -243,7 +243,7 @@ return new class implements ConfigurationPluginInterface {
                                     }
                                 },
                                 self::REGEX_SKIPPED_COMMAND => function (string $message): void {
-                                    $this->logDiagnostic($message, ToolReportInterface::SEVERITY_NOTICE);
+                                    $this->logDiagnostic($message, ToolReportInterface::SEVERITY_INFO);
                                 },
                             ] as $pattern => $handler
                         ) {
