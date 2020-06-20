@@ -1,55 +1,55 @@
 <?php
 
-use Phpcq\PluginApi\Version10\BuildConfigInterface;
-use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
-use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationBuilderInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationInterface;
+use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
+use Phpcq\PluginApi\Version10\EnvironmentInterface;
 
-return new class implements ConfigurationPluginInterface {
+return new class implements DiagnosticsPluginInterface {
     public function getName(): string
     {
         return 'phpcbf';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
+    public function describeConfiguration(PluginConfigurationBuilderInterface $configOptionsBuilder): void
     {
+        $configOptionsBuilder->supportDirectories();
         $configOptionsBuilder
-            ->describeArrayOption('directories', 'The source directories to be fixed with phpcbf.')
-            ->describeStringOption('standard', 'The default code style', 'PSR12')
-            ->describeArrayOption('excluded', 'The excluded files and folders.', [])
-        ;
-
+            ->describeStringOption('standard', 'The default code style')
+            ->isRequired()
+            ->withDefaultValue('PSR12');
+        $configOptionsBuilder->describeArrayOption('excluded', 'The excluded files and folders.');
         $configOptionsBuilder->describeArrayOption(
             'custom_flags',
             'Any custom flags to pass to phpcbf. For valid flags refer to the cphpcs documentation.',
         );
     }
 
-    public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
-    {
-        foreach ($config['directories'] as $directory => $directoryConfig) {
+    public function createDiagnosticTasks(
+        PluginConfigurationInterface $config,
+        EnvironmentInterface $buildConfig
+    ): iterable {
+        foreach ($config->getStringList('directories') as $directory) {
             yield $buildConfig
                 ->getTaskFactory()
-                ->buildRunPhar('phpcbf', $this->buildArguments($directory, $directoryConfig ?: $config, $buildConfig))
+                ->buildRunPhar('phpcbf', $this->buildArguments($directory, $config))
                 ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
                 ->build();
         }
     }
 
-    private function buildArguments(string $directory, array $config, BuildConfigInterface $buildConfig): array
+    private function buildArguments(string $directory, PluginConfigurationInterface $config): array
     {
         $arguments = [];
+        $arguments[] = '--standard=' . $config->getString('standard');
 
-        if (isset($config['standard'])) {
-            $arguments[] = '--standard=' . $config['standard'];
+        if ($config->has('excluded')) {
+            $arguments[] = '--exclude=' . implode(',', $config->getStringList('excluded'));
         }
 
-        if (isset($config['excluded'])) {
-            $arguments[] = '--exclude=' . implode(',', $config['excluded']);
-        }
-
-        if ([] !== ($values = $config['custom_flags'] ?? [])) {
-            foreach ($values as $value) {
-                $arguments[] = (string) $value;
+        if ($config->has('custom_flags')) {
+            foreach ($config->getStringList('custom_flags') as $value) {
+                $arguments[] = $value;
             }
         }
 
