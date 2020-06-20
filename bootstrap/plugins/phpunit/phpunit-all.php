@@ -1,37 +1,42 @@
 <?php
 
-use Phpcq\PluginApi\Version10\BuildConfigInterface;
-use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
-use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
-use Phpcq\PluginApi\Version10\OutputTransformerFactoryInterface;
-use Phpcq\PluginApi\Version10\OutputTransformerInterface;
-use Phpcq\PluginApi\Version10\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationBuilderInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationInterface;
+use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
+use Phpcq\PluginApi\Version10\EnvironmentInterface;
+use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
+use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
+use Phpcq\PluginApi\Version10\Report\ToolReportInterface;
 use Phpcq\PluginApi\Version10\Util\JUnitReportAppender;
 
-return new class implements ConfigurationPluginInterface {
+return new class implements DiagnosticsPluginInterface {
     public function getName(): string
     {
         return 'phpunit';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
+    public function describeConfiguration(PluginConfigurationBuilderInterface $configOptionsBuilder): void
     {
-        $configOptionsBuilder->describeArrayOption(
-            'custom_flags',
-            'Any custom flags to pass to phpunit. For valid flags refer to the phpunit documentation.',
-        );
+        $configOptionsBuilder
+            ->describeListOption(
+                'custom_flags',
+                'Any custom flags to pass to phpunit. For valid flags refer to the phpunit documentation.'
+            )
+            ->ofStringItems();
     }
 
-    public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
-    {
+    public function createDiagnosticTasks(
+        PluginConfigurationInterface $config,
+        EnvironmentInterface $buildConfig
+    ): iterable {
         $args = [
             '--log-junit',
             $logFile = $buildConfig->getUniqueTempFile($this, 'junit-log.xml')
         ];
 
-        if ([] !== ($values = $config['custom_flags'] ?? [])) {
-            foreach ($values as $value) {
-                $args[] = (string) $value;
+        if ($config->has('custom_flags')) {
+            foreach ($config->getStringList('custom_flags') as $value) {
+                $args[] = $value;
             }
         }
 
