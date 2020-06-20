@@ -4,74 +4,64 @@
  * Tool home: https://github.com/phpmd/phpmd
  */
 
-use Phpcq\PluginApi\Version10\BuildConfigInterface;
-use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
-use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
-use Phpcq\PluginApi\Version10\OutputTransformerFactoryInterface;
-use Phpcq\PluginApi\Version10\OutputTransformerInterface;
-use Phpcq\PluginApi\Version10\ReportInterface;
-use Phpcq\PluginApi\Version10\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationBuilderInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationInterface;
+use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
+use Phpcq\PluginApi\Version10\EnvironmentInterface;
+use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
+use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
+use Phpcq\PluginApi\Version10\Report\ToolReportInterface;
 
-return new class implements ConfigurationPluginInterface {
+return new class implements DiagnosticsPluginInterface {
     public function getName(): string
     {
         return 'phpmd';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
+    public function describeConfiguration(PluginConfigurationBuilderInterface $configOptionsBuilder): void
     {
-        $configOptionsBuilder->describeArrayOption(
-            'ruleset',
-            'List of rulesets (cleancode, codesize, controversial, design, naming, unusedcode).',
-            [
-                'naming',
-                'unusedcode'
-            ]
-        );
+        $configOptionsBuilder->supportDirectories();
+        $configOptionsBuilder
+            ->describeListOption(
+                'ruleset',
+                'List of rulesets (cleancode, codesize, controversial, design, naming, unusedcode).'
+            )
+            ->ofStringItems()
+            ->isRequired()
+            ->withDefaultValue(['naming', 'unusedcode']);
 
-        $configOptionsBuilder->describeArrayOption(
-            'custom_flags',
-            'Any custom flags to pass to phpmd.'
-        );
-
-        $configOptionsBuilder->describeArrayOption(
-            'directories',
-            'Source directories to be analyzed with phpmd.'
-        );
+        $configOptionsBuilder
+            ->describeListOption(
+                'custom_flags',
+                'Any custom flags to pass to phpmd. For valid flags refer to the phpmd documentation.'
+            )
+            ->ofStringItems();
     }
 
-
-    public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
-    {
-        [$should, $excluded] = $this->processDirectories($config['directories']);
-
-        $flags = ['ruleset' => 'naming,unusedcode'];
-
-        foreach ($flags as $key => $value) {
-            if ('' !== ($value = $this->commaValues($config, $key))) {
-                $flags[$key] = $value;
-            }
-        }
+    public function createDiagnosticTasks(
+        PluginConfigurationInterface $config,
+        EnvironmentInterface $buildConfig
+    ): iterable {
+        $directories = $config->getStringList('directories');
 
         $args = [
-            implode(',', $should),
+            implode(',', $directories),
             'xml',
-            $flags['ruleset'],
+            implode(', ', $config->getStringList('ruleset')),
         ];
 
-        if ([] !== $excluded) {
-            $exclude = [];
-            foreach ($excluded as $path) {
+        if ($config->has('excluded')) {
+            foreach ($config->getStringList('excluded') as $path) {
                 if ('' === ($path = trim($path))) {
                     continue;
                 }
-                $exclude[] = $path;
+                $args[] = '--exclude=' . $path;
             }
-            $args[] = '--exclude=' . implode(',', $exclude);
         }
-        if ([] !== ($values = $config['custom_flags'] ?? [])) {
-            foreach ($values as $value) {
-                $args[] = (string) $value;
+
+        if ($config->has('custom_flags')) {
+            foreach ($config->getStringList('custom_flags') as $value) {
+                $args[] = $value;
             }
         }
 
@@ -87,38 +77,6 @@ return new class implements ConfigurationPluginInterface {
                 $this->createOutputTransformer($xmlfile, $buildConfig->getProjectConfiguration()->getProjectRootPath())
             )
             ->build();
-    }
-
-    /**
-     * Process the directory list.
-     *
-     * @param array $directories The directory list.
-     *
-     * @return array
-     */
-    private function processDirectories(array $directories): array
-    {
-        $should  = [];
-        $exclude = [];
-        foreach ($directories as $directory => $dirConfig) {
-            $should[] = $directory;
-            if (null !== $dirConfig) {
-                if (isset($dirConfig['excluded'])) {
-                    foreach ($dirConfig['excluded'] as $excl) {
-                        $exclude[] = $directory . '/' . $excl;
-                    }
-                }
-            }
-        }
-        return [$should, $exclude];
-    }
-
-    private function commaValues(array $config, string $key): string
-    {
-        if (!isset($config[$key])) {
-            return '';
-        }
-        return implode(',', (array) $config[$key]);
     }
 
     private function createOutputTransformer(string $xmlFile, string $rootDir): OutputTransformerFactoryInterface
@@ -164,7 +122,9 @@ return new class implements ConfigurationPluginInterface {
 
                         if (!$rootNode instanceof DOMNode) {
                             $this->report->close(
-                                $exitCode === 0 ? ReportInterface::STATUS_PASSED : ReportInterface::STATUS_FAILED
+                                $exitCode === 0
+                                    ? ToolReportInterface::STATUS_PASSED
+                                    : ToolReportInterface::STATUS_FAILED
                             );
                             return;
                         }
@@ -207,17 +167,17 @@ return new class implements ConfigurationPluginInterface {
                                     (string) $this->getXmlAttribute($violationNode, 'externalInfoUrl', '')
                                 );
 
-                                $severity = ToolReportInterface::SEVERITY_ERROR;
+                                $severity = ToolReportInterface::SEVERITY_FATAL;
                                 if (null !== $prio = $this->getIntXmlAttribute($violationNode, 'priority')) {
                                     // FIXME: Is this mapping correct?
                                     switch ($prio) {
                                         case 1:
                                         case 2:
                                         case 3:
-                                            $severity = ToolReportInterface::SEVERITY_ERROR;
+                                            $severity = ToolReportInterface::SEVERITY_MAJOR;
                                             break;
                                         case 4:
-                                            $severity = ToolReportInterface::SEVERITY_WARNING;
+                                            $severity = ToolReportInterface::SEVERITY_MINOR;
                                             break;
                                         case 5:
                                         default:
@@ -247,8 +207,8 @@ return new class implements ConfigurationPluginInterface {
 
                         $this->report->close(
                             $exitCode === 0
-                                ? ReportInterface::STATUS_PASSED
-                                : ReportInterface::STATUS_FAILED
+                                ? ToolReportInterface::STATUS_PASSED
+                                : ToolReportInterface::STATUS_FAILED
                         );
                     }
 
