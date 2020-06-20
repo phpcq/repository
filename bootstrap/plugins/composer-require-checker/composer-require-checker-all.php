@@ -1,37 +1,43 @@
 <?php
 
-use Phpcq\PluginApi\Version10\BuildConfigInterface;
-use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
-use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
-use Phpcq\PluginApi\Version10\OutputTransformerFactoryInterface;
-use Phpcq\PluginApi\Version10\OutputTransformerInterface;
-use Phpcq\PluginApi\Version10\ReportInterface;
-use Phpcq\PluginApi\Version10\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationBuilderInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationInterface;
+use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
+use Phpcq\PluginApi\Version10\EnvironmentInterface;
+use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
+use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
+use Phpcq\PluginApi\Version10\Report\ToolReportInterface;
 use Phpcq\PluginApi\Version10\Util\BufferedLineReader;
 
-return new class implements ConfigurationPluginInterface {
+return new class implements DiagnosticsPluginInterface {
     public function getName(): string
     {
         return 'composer-require-checker';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
+    public function describeConfiguration(PluginConfigurationBuilderInterface $configOptionsBuilder): void
     {
         $configOptionsBuilder
-            ->describeStringOption('config_file', 'Path to configuration file')
-            ->describeStringOption('composer_file', 'Path to the composer.json', 'composer.json');
-
-        $configOptionsBuilder->describeArrayOption(
-            'custom_flags',
-            'Any custom flags to pass to composer-require-checker. ' .
-            'For valid flags refer to the composer-require-checker documentation.',
-        );
+            ->describeStringOption('config_file', 'Path to configuration file');
+        $configOptionsBuilder
+            ->describeStringOption('composer_file', 'Path to the composer.json (relative to project root)')
+            ->isRequired()
+            ->withDefaultValue('composer.json');
+        $configOptionsBuilder
+            ->describeListOption(
+                'custom_flags',
+                'Any custom flags to pass to composer-require-checker.' .
+                'For valid flags refer to the composer-require-checker documentation.',
+            )
+            ->ofStringItems()
+        ;
     }
 
-    public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
-    {
-        $composerJson = $config['composer_file'] ?? 'composer.json';
-        assert(is_string($composerJson));
+    public function createDiagnosticTasks(
+        PluginConfigurationInterface $config,
+        EnvironmentInterface $buildConfig
+    ): iterable {
+        $composerJson = $config->getString('composer_file');
 
         yield $buildConfig
             ->getTaskFactory()
@@ -42,21 +48,18 @@ return new class implements ConfigurationPluginInterface {
     }
 
     /** @psalm-return array<int, string> */
-    private function buildArguments(array $config, BuildConfigInterface $buildConfig): array
+    private function buildArguments(PluginConfigurationInterface $config, EnvironmentInterface $buildConfig): array
     {
-        $arguments = ['check'];
-
+        $arguments   = ['check'];
         $projectRoot = $buildConfig->getProjectConfiguration()->getProjectRootPath() . '/';
-        if (isset($config['config_file'])) {
-            $arguments[] = '--config-file=' . $projectRoot . (string) $config['config_file'];
-        }
 
-        if (isset($config['composer_file'])) {
-            $arguments[] = $projectRoot . (string) $config['composer_file'];
+        if ($config->has('config_file')) {
+            $arguments[] = '--config-file=' . $projectRoot . $config->getString('config_file');
         }
+        $arguments[] = $projectRoot . $config->getString('composer_file');
 
-        if ([] !== ($values = $config['custom_flags'] ?? [])) {
-            foreach ($values as $value) {
+        if ($config->has('custom_flags')) {
+            foreach ($config->getStringList('custom_flags') as $value) {
                 $arguments[] = (string) $value;
             }
         }
@@ -108,8 +111,8 @@ return new class implements ConfigurationPluginInterface {
                     {
                         $this->process();
                         $this->report->close(0 === $exitCode
-                            ? ReportInterface::STATUS_PASSED
-                            : ReportInterface::STATUS_FAILED);
+                            ? ToolReportInterface::STATUS_PASSED
+                            : ToolReportInterface::STATUS_FAILED);
                     }
 
                     private function logDiagnostic(string $message, string $severity): void
