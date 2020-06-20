@@ -11,7 +11,8 @@
     "Phar",
     "Reflection",
     "SPL",
-    "standard"
+    "standard",
+    "json"
   ],
   "scan-files" : [
     "./plugins/*/*.php"
