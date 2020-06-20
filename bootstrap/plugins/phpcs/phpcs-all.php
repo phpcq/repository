@@ -1,39 +1,42 @@
 <?php
 
-use Phpcq\PluginApi\Version10\BuildConfigInterface;
-use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
-use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationBuilderInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationInterface;
+use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
+use Phpcq\PluginApi\Version10\EnvironmentInterface;
 use Phpcq\PluginApi\Version10\Util\CheckstyleReportAppender;
 
-return new class implements ConfigurationPluginInterface {
+return new class implements DiagnosticsPluginInterface {
     public function getName(): string
     {
         return 'phpcs';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
+    public function describeConfiguration(PluginConfigurationBuilderInterface $configOptionsBuilder): void
     {
+        $configOptionsBuilder->supportDirectories();
         $configOptionsBuilder
-            ->describeArrayOption('directories', 'The source directories to be analyzed with phpcs.')
-            ->describeStringOption('standard', 'The default coding standard style')
-            ->describeArrayOption('excluded', 'The excluded files and folders.', [])
-        ;
-
+            ->describeStringOption('standard', 'The default code style')
+            ->isRequired()
+            ->withDefaultValue('PSR12');
+        $configOptionsBuilder->describeArrayOption('excluded', 'The excluded files and folders.');
         $configOptionsBuilder->describeArrayOption(
             'custom_flags',
-            'Any custom flags to pass to phpcs. For valid flags refer to the cphpcs documentation.',
+            'Any custom flags to pass to phpcbf. For valid flags refer to the cphpcs documentation.',
         );
     }
 
-    public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
-    {
+    public function createDiagnosticTasks(
+        PluginConfigurationInterface $config,
+        EnvironmentInterface $buildConfig
+    ): iterable {
         $projectRoot = $buildConfig->getProjectConfiguration()->getProjectRootPath();
-        foreach ($config['directories'] as $directory => $directoryConfig) {
+        foreach ($config->getStringList('directories') as $directory) {
             $tmpfile = $buildConfig->getUniqueTempFile($this, 'checkstyle.xml');
 
             yield $buildConfig
                 ->getTaskFactory()
-                ->buildRunPhar('phpcs', $this->buildArguments($directory, $directoryConfig ?: $config, $tmpfile))
+                ->buildRunPhar('phpcs', $this->buildArguments($directory, $config, $tmpfile))
                 ->withWorkingDirectory($projectRoot)
                 ->withOutputTransformer(CheckstyleReportAppender::transformFile($tmpfile, $projectRoot))
                 ->build();
@@ -42,22 +45,19 @@ return new class implements ConfigurationPluginInterface {
 
     private function buildArguments(
         string $directory,
-        array $config,
+        PluginConfigurationInterface $config,
         string $tempFile
     ): array {
         $arguments = [];
+        $arguments[] = '--standard=' . $config->getString('standard');
 
-        if (isset($config['standard'])) {
-            $arguments[] = '--standard=' . $config['standard'];
+        if ($config->has('excluded')) {
+            $arguments[] = '--exclude=' . implode(',', $config->getStringList('excluded'));
         }
 
-        if (isset($config['excluded'])) {
-            $arguments[] = '--exclude=' . implode(',', $config['excluded']);
-        }
-
-        if ([] !== ($values = $config['custom_flags'] ?? [])) {
-            foreach ($values as $value) {
-                $arguments[] = (string) $value;
+        if ($config->has('custom_flags')) {
+            foreach ($config->getStringList('custom_flags') as $value) {
+                $arguments[] = $value;
             }
         }
 
