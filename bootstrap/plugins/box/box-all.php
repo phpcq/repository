@@ -469,7 +469,7 @@ return new class implements DiagnosticsPluginInterface {
         // https://github.com/humbug/box/blob/master/doc/configuration.md#map-map
         // FIXME: I almost bet this is could be described better.
         $configOptionsBuilder
-            ->describeArrayOption(
+            ->describePrototypeOption(
                 'map',
                 <<<EOF
                 The map setting is used to change where some (or all) files are stored inside the PHAR. The key is a
@@ -478,7 +478,8 @@ return new class implements DiagnosticsPluginInterface {
                 prefixed to all paths (except for those already matched by an earlier key).
 
                 EOF
-            );
+            )
+            ->ofStringValue();
         // https://github.com/humbug/box/blob/master/doc/configuration.md#metadata-metadata
         // FIXME: how shall we support THIS? - "any" value is evil.
         $configOptionsBuilder
@@ -526,7 +527,7 @@ return new class implements DiagnosticsPluginInterface {
             ->withDefaultValue('@');
         // https://github.com/humbug/box/blob/master/doc/configuration.md#replacements-replacements
         $configOptionsBuilder
-            ->describeArrayOption(
+            ->describePrototypeOption(
                 'replacements',
                 <<<EOF
                 The replacements setting is a map of placeholders (as keys) and their values.
@@ -535,7 +536,8 @@ return new class implements DiagnosticsPluginInterface {
                 EOF
             )
             ->isRequired()
-            ->withDefaultValue([]);
+            ->withDefaultValue([])
+            ->ofStringValue();
         // https://github.com/humbug/box/blob/master/doc/configuration.md#shebang-shebang
         $configOptionsBuilder
             ->describeStringOption(
@@ -708,11 +710,11 @@ return new class implements DiagnosticsPluginInterface {
         }
 
         if ($config->has('map')) {
-            $contents['map'] = $config->getArray('map');
+            $contents['map'] = $config->getOptions('map')->getValue();
         }
 
         if ($config->has('replacements')) {
-            $contents['replacements'] = $config->getArray('replacements');
+            $contents['replacements'] = $config->getOptions('replacements')->getValue();
         }
 
         ksort($contents);

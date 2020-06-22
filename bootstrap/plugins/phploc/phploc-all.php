@@ -26,7 +26,8 @@ return new class implements DiagnosticsPluginInterface {
                 'excluded',
                 'List of excluded files.'
             )
-            ->ofStringItems();
+            ->ofStringItems()
+            ->withNormalizer(static function ($value) { return trim($value); });
         $configOptionsBuilder
             ->describeListOption(
                 'custom_flags',
@@ -47,9 +48,6 @@ return new class implements DiagnosticsPluginInterface {
         ];
         if ($config->has('excluded')) {
             foreach ($config->getStringList('excluded') as $path) {
-                if ('' === ($path = trim($path))) {
-                    continue;
-                }
                 $args[] = '--exclude=' . $path;
             }
         }

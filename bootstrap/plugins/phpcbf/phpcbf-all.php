@@ -18,11 +18,17 @@ return new class implements DiagnosticsPluginInterface {
             ->describeStringOption('standard', 'The default code style')
             ->isRequired()
             ->withDefaultValue('PSR12');
-        $configOptionsBuilder->describeArrayOption('excluded', 'The excluded files and folders.');
-        $configOptionsBuilder->describeArrayOption(
-            'custom_flags',
-            'Any custom flags to pass to phpcbf. For valid flags refer to the cphpcs documentation.',
-        );
+        $configOptionsBuilder
+            ->describeListOption('excluded', 'The excluded files and folders.')
+            ->ofStringItems()
+            ->withDefaultValue([]);
+        $configOptionsBuilder
+            ->describeListOption(
+                'custom_flags',
+                'Any custom flags to pass to phpcbf. For valid flags refer to the cphpcs documentation.',
+            )
+            ->ofStringItems()
+            ->withDefaultValue([]);
     }
 
     public function createDiagnosticTasks(

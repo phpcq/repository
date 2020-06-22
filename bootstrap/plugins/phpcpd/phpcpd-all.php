@@ -113,7 +113,7 @@ return new class implements DiagnosticsPluginInterface {
         }
 
         $rootDir  = $buildConfig->getProjectConfiguration()->getProjectRootPath();
-        $severity = $config['severity'] ?? ToolReportInterface::SEVERITY_WARNING;
+        $severity = $config['severity'] ?? ToolReportInterface::SEVERITY_MINOR;
 
         yield $buildConfig
             ->getTaskFactory()
