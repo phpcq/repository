@@ -57,8 +57,8 @@ return new class implements DiagnosticsPluginInterface {
         $arguments = [];
         $arguments[] = '--standard=' . $config->getString('standard');
 
-        if ($config->has('excluded')) {
-            $arguments[] = '--exclude=' . implode(',', $config->getStringList('excluded'));
+        if ([] !== ($excluded = $config->getStringList('excluded'))) {
+            $arguments[] = '--exclude=' . implode(',', $excluded);
         }
 
         if ($config->has('custom_flags')) {

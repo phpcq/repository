@@ -47,7 +47,7 @@ return new class implements DiagnosticsPluginInterface {
         $args = [
             implode(',', $directories),
             'xml',
-            implode(', ', $config->getStringList('ruleset')),
+            implode(',', $config->getStringList('ruleset')),
         ];
 
         if ($config->has('excluded')) {
@@ -65,9 +65,9 @@ return new class implements DiagnosticsPluginInterface {
             }
         }
 
-        $xmlfile = $xmlfile = $buildConfig->getUniqueTempFile($this, 'xml');
-        $args[] = '--report-file';
-        $args[] = $xmlfile;
+        $xmlfile = $buildConfig->getUniqueTempFile($this, 'xml');
+        $args[]  = '--report-file';
+        $args[]  = $xmlfile;
 
         yield $buildConfig
             ->getTaskFactory()
