@@ -22,18 +22,20 @@ return new class implements DiagnosticsPluginInterface {
     {
         $configOptionsBuilder->supportDirectories();
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'excluded',
                 'List of excluded files.'
             )
-            ->ofStringItems()
+            ->withDefaultValue([])
+            ->isRequired()
             ->withNormalizer(static function ($value) { return trim($value); });
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'custom_flags',
                 'Any custom flags to pass to phploc. For valid flags refer to the phploc documentation.'
             )
-            ->ofStringItems();
+            ->withDefaultValue([])
+            ->isRequired();
     }
 
     public function createDiagnosticTasks(

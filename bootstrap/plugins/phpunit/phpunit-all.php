@@ -18,11 +18,12 @@ return new class implements DiagnosticsPluginInterface {
     public function describeConfiguration(PluginConfigurationBuilderInterface $configOptionsBuilder): void
     {
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'custom_flags',
                 'Any custom flags to pass to phpunit. For valid flags refer to the phpunit documentation.'
             )
-            ->ofStringItems();
+            ->withDefaultValue([])
+            ->isRequired();
     }
 
     public function createDiagnosticTasks(

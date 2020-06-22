@@ -20,15 +20,15 @@ return new class implements DiagnosticsPluginInterface {
             ->isRequired()
             ->withDefaultValue('PSR12');
         $configOptionsBuilder
-            ->describeListOption('excluded', 'The excluded files and folders.')
-            ->ofStringItems()
+            ->describeStringListOption('excluded', 'The excluded files and folders.')
+            ->isRequired()
             ->withDefaultValue([]);
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'custom_flags',
                 'Any custom flags to pass to phpcbf. For valid flags refer to the cphpcs documentation.',
             )
-            ->ofStringItems()
+            ->isRequired()
             ->withDefaultValue([]);
     }
 

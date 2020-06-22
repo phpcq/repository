@@ -24,12 +24,11 @@ return new class implements DiagnosticsPluginInterface {
             ->isRequired()
             ->withDefaultValue('composer.json');
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'custom_flags',
                 'Any custom flags to pass to composer-require-checker.' .
                 'For valid flags refer to the composer-require-checker documentation.',
             )
-            ->ofStringItems()
         ;
     }
 

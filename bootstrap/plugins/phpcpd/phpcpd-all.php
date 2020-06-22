@@ -24,18 +24,17 @@ return new class implements DiagnosticsPluginInterface {
     public function describeConfiguration(PluginConfigurationBuilderInterface $configOptionsBuilder): void
     {
         $configOptionsBuilder
-            ->describeListOption('names', 'A list of file names to check.')
-            ->ofStringItems()
+            ->describeStringListOption('names', 'A list of file names to check.')
             ->isRequired()
             ->withDefaultValue(['*.php']);
 
         $configOptionsBuilder
-            ->describeListOption('names_exclude', 'A list of file names to exclude.')
-            ->ofStringItems();
+            ->describeStringListOption('names_exclude', 'A list of file names to exclude.');
 
-        $configOptionsBuilder
-            ->describeListOption('regexps_exclude','A list of paths regexps to exclude (example: "#var/.*_tmp#")')
-            ->ofStringItems();
+        $configOptionsBuilder->describeStringListOption(
+            'regexps_exclude',
+            'A list of paths regexps to exclude (example: "#var/.*_tmp#")'
+        );
 
         $configOptionsBuilder
             ->describeIntOption('min_lines', 'Minimum number of identical lines.')
@@ -53,11 +52,12 @@ return new class implements DiagnosticsPluginInterface {
             ->withDefaultValue(false);
 
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'custom_flags',
                 'Any custom flags to pass to phpcpd. For valid flags refer to the phpcpd documentation.'
             )
-            ->ofStringItems();
+            ->withDefaultValue([])
+            ->isRequired();
 
         $severityText = implode('", "', [
             ToolReportInterface::SEVERITY_NONE,

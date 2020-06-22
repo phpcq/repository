@@ -22,20 +22,20 @@ return new class implements DiagnosticsPluginInterface {
     {
         $configOptionsBuilder->supportDirectories();
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'ruleset',
                 'List of rulesets (cleancode, codesize, controversial, design, naming, unusedcode).'
             )
-            ->ofStringItems()
             ->isRequired()
             ->withDefaultValue(['naming', 'unusedcode']);
 
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'custom_flags',
                 'Any custom flags to pass to phpmd. For valid flags refer to the phpmd documentation.'
             )
-            ->ofStringItems();
+            ->isRequired()
+            ->withDefaultValue([]);
     }
 
     public function createDiagnosticTasks(

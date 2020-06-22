@@ -30,11 +30,12 @@ return new class implements DiagnosticsPluginInterface {
             ->describeStringOption('shepherd_host', 'Override shepherd host');
 
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'custom_flags',
                 'Any custom flags to pass to psalm. For valid flags refer to the psalm documentation.'
             )
-            ->ofStringItems();
+            ->withDefaultValue([])
+            ->isRequired();
     }
 
     public function createDiagnosticTasks(

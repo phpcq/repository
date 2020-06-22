@@ -107,7 +107,7 @@ return new class implements DiagnosticsPluginInterface {
         */
         // https://github.com/humbug/box/blob/master/doc/configuration.md#blacklist-blacklist
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'blacklist',
                 <<<EOF
                 The blacklist setting is a list of files that must not be added.
@@ -118,7 +118,6 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->ofStringItems()
             ->withDefaultValue([])
             ->isRequired();
         // https://github.com/humbug/box/blob/master/doc/configuration.md#check-requirements-check-requirements
@@ -153,7 +152,7 @@ return new class implements DiagnosticsPluginInterface {
             );
         // https://github.com/humbug/box/blob/master/doc/configuration.md#compactors-compactors
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'compactors',
                 <<<EOF
                 The compactors setting is a list of file contents compacting classes that must be registered.
@@ -165,7 +164,6 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->ofStringItems()
             ->withDefaultValue([])
             ->isRequired();
         // https://github.com/humbug/box/blob/master/doc/configuration.md#compression-algorithm-compression
@@ -211,7 +209,7 @@ return new class implements DiagnosticsPluginInterface {
             ->isRequired();
         // https://github.com/humbug/box/blob/master/doc/configuration.md#directories-directories-and-directories-bin
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'directories',
                 <<<EOF
                 The directories setting is a list of directory paths relative to base-path.
@@ -220,12 +218,11 @@ return new class implements DiagnosticsPluginInterface {
                 Files listed in the blacklist will not be added to the PHAR.
                 EOF
             )
-            ->ofStringItems()
             ->withDefaultValue([])
             ->isRequired();
         // https://github.com/humbug/box/blob/master/doc/configuration.md#directories-directories-and-directories-bin
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'directories_bin',
                 <<<EOF
                 The directories_bin setting is analogue to directories except the files are added to the PHAR
@@ -234,7 +231,6 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->ofStringItems()
             ->withDefaultValue([])
             ->isRequired();
         // https://github.com/humbug/box/blob/master/doc/configuration.md#dumping-the-composer-autoloader-dump-autoload
@@ -284,7 +280,7 @@ return new class implements DiagnosticsPluginInterface {
             ->withDefaultValue(true);
         // https://github.com/humbug/box/blob/master/doc/configuration.md#files-files-and-files-bin
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'files',
                 <<<EOF
                 The files setting is a list of files paths relative to base-path unless absolute. Each file will be
@@ -293,12 +289,11 @@ return new class implements DiagnosticsPluginInterface {
                 This setting is not affected by the blacklist setting.
                 EOF
             )
-            ->ofStringItems()
             ->withDefaultValue([])
             ->isRequired();
         // https://github.com/humbug/box/blob/master/doc/configuration.md#files-files-and-files-bin
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'files_bin',
                 <<<EOF
                 files-bin is analogue to files except the files are added to the PHAR unmodified.
@@ -307,12 +302,11 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->ofStringItems()
             ->withDefaultValue([])
             ->isRequired();
         // https://github.com/humbug/box/blob/master/doc/configuration.md#finder-finder-and-finder-bin
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'finder',
                 <<<EOF
                 The finder setting is a list of JSON objects. Each object (key, value) tuple is a (method, arguments) of
@@ -322,12 +316,11 @@ return new class implements DiagnosticsPluginInterface {
                 account for the files registered in the blacklist.
                 EOF
             )
-            ->ofStringItems()
             ->withDefaultValue([])
             ->isRequired();
         // https://github.com/humbug/box/blob/master/doc/configuration.md#finder-finder-and-finder-bin
         $configOptionsBuilder
-            ->describeListOption(
+            ->describeStringListOption(
                 'finder_bin',
                 <<<EOF
                 finder-bin is analogue to finder except the files are added to the PHAR unmodified.
@@ -336,7 +329,6 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->ofStringItems()
             ->withDefaultValue([])
             ->isRequired();
         // https://github.com/humbug/box/blob/master/doc/configuration.md#force-auto-discovery-force-autodiscovery
