@@ -33,16 +33,16 @@ return new class implements DiagnosticsPluginInterface {
 
     public function createDiagnosticTasks(
         PluginConfigurationInterface $config,
-        EnvironmentInterface $buildConfig
+        EnvironmentInterface $environment
     ): iterable {
-        yield $buildConfig
+        yield $environment
             ->getTaskFactory()
-            ->buildRunPhar('phpcbf', $this->buildArguments($config))
-            ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
+            ->buildRunPhar('phpcbf', $this->buildArguments($config, $environment))
+            ->withWorkingDirectory($environment->getProjectConfiguration()->getProjectRootPath())
             ->build();
     }
 
-    private function buildArguments(PluginConfigurationInterface $config): array
+    private function buildArguments(PluginConfigurationInterface $config, EnvironmentInterface $environment): array
     {
         $arguments   = [];
         $arguments[] = '--standard=' . $config->getString('standard');
@@ -56,6 +56,8 @@ return new class implements DiagnosticsPluginInterface {
                 $arguments[] = $value;
             }
         }
+
+        $arguments[] = '--parallel=' . $environment->getProjectConfiguration()->getMaxCpuCores();
 
         return array_merge($arguments, $config->getStringList('directories'));
     }
