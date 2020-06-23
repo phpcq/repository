@@ -35,22 +35,20 @@ return new class implements DiagnosticsPluginInterface {
         PluginConfigurationInterface $config,
         EnvironmentInterface $buildConfig
     ): iterable {
-        foreach ($config->getStringList('directories') as $directory) {
-            yield $buildConfig
-                ->getTaskFactory()
-                ->buildRunPhar('phpcbf', $this->buildArguments($directory, $config))
-                ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
-                ->build();
-        }
+        yield $buildConfig
+            ->getTaskFactory()
+            ->buildRunPhar('phpcbf', $this->buildArguments($config))
+            ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
+            ->build();
     }
 
-    private function buildArguments(string $directory, PluginConfigurationInterface $config): array
+    private function buildArguments(PluginConfigurationInterface $config): array
     {
-        $arguments = [];
+        $arguments   = [];
         $arguments[] = '--standard=' . $config->getString('standard');
 
-        if ($config->has('excluded')) {
-            $arguments[] = '--exclude=' . implode(',', $config->getStringList('excluded'));
+        if ([] !== ($excluded = $config->getStringList('excluded'))) {
+            $arguments[] = '--exclude=' . implode(',', $excluded);
         }
 
         if ($config->has('custom_flags')) {
@@ -59,8 +57,6 @@ return new class implements DiagnosticsPluginInterface {
             }
         }
 
-        $arguments[] = $directory;
-
-        return $arguments;
+        return array_merge($arguments, $config->getStringList('directories'));
     }
 };

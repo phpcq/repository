@@ -37,20 +37,17 @@ return new class implements DiagnosticsPluginInterface {
         EnvironmentInterface $buildConfig
     ): iterable {
         $projectRoot = $buildConfig->getProjectConfiguration()->getProjectRootPath();
-        foreach ($config->getStringList('directories') as $directory) {
-            $tmpfile = $buildConfig->getUniqueTempFile($this, 'checkstyle.xml');
+        $tmpfile     = $buildConfig->getUniqueTempFile($this, 'checkstyle.xml');
 
-            yield $buildConfig
-                ->getTaskFactory()
-                ->buildRunPhar('phpcs', $this->buildArguments($directory, $config, $tmpfile))
-                ->withWorkingDirectory($projectRoot)
-                ->withOutputTransformer(CheckstyleReportAppender::transformFile($tmpfile, $projectRoot))
-                ->build();
-        }
+        yield $buildConfig
+            ->getTaskFactory()
+            ->buildRunPhar('phpcs', $this->buildArguments($config, $tmpfile))
+            ->withWorkingDirectory($projectRoot)
+            ->withOutputTransformer(CheckstyleReportAppender::transformFile($tmpfile, $projectRoot))
+            ->build();
     }
 
     private function buildArguments(
-        string $directory,
         PluginConfigurationInterface $config,
         string $tempFile
     ): array {
@@ -70,8 +67,6 @@ return new class implements DiagnosticsPluginInterface {
         $arguments[] = '--report=checkstyle';
         $arguments[] = '--report-file=' . $tempFile;
 
-        $arguments[] = $directory;
-
-        return $arguments;
+        return array_merge($arguments, $config->getStringList('directories'));
     }
 };
