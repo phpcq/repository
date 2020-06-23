@@ -23,6 +23,7 @@ return new class implements DiagnosticsPluginInterface {
 
     public function describeConfiguration(PluginConfigurationBuilderInterface $configOptionsBuilder): void
     {
+        $configOptionsBuilder->supportDirectories();
         $configOptionsBuilder
             ->describeStringListOption('names', 'A list of file names to check.')
             ->isRequired()
