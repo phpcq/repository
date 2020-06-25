@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a548fa94db07d9b1085e49e2dcd3e7e1",
+    "content-hash": "16c569304e993fbf11e800e372f66b73",
     "packages": [
         {
             "name": "phpcq/plugin-api",
-            "version": "dev-master",
+            "version": "dev-feature/revise-api",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpcq/plugin-api.git",
-                "reference": "f24ac7a09a87bbf136170597d900aaa4ea9c1354"
+                "reference": "36dee8d90d8648b9020fe3788199cfdeedadca85"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpcq/plugin-api/zipball/f24ac7a09a87bbf136170597d900aaa4ea9c1354",
-                "reference": "f24ac7a09a87bbf136170597d900aaa4ea9c1354",
+                "url": "https://api.github.com/repos/phpcq/plugin-api/zipball/36dee8d90d8648b9020fe3788199cfdeedadca85",
+                "reference": "36dee8d90d8648b9020fe3788199cfdeedadca85",
                 "shasum": ""
             },
             "require": {
@@ -59,7 +59,17 @@
                 }
             ],
             "description": "PHP code quality project plugin API interfaces.",
-            "time": "2020-06-18T12:38:53+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/discordier",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/dmolineus",
+                    "type": "github"
+                }
+            ],
+            "time": "2020-06-22T10:00:36+00:00"
         }
     ],
     "packages-dev": [],

@@ -1,60 +1,64 @@
 <?php
 
-use Phpcq\PluginApi\Version10\BuildConfigInterface;
-use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
-use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationBuilderInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationInterface;
+use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
+use Phpcq\PluginApi\Version10\EnvironmentInterface;
 
-return new class implements ConfigurationPluginInterface {
+return new class implements DiagnosticsPluginInterface {
     public function getName(): string
     {
         return 'phpcbf';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
+    public function describeConfiguration(PluginConfigurationBuilderInterface $configOptionsBuilder): void
     {
+        $configOptionsBuilder->supportDirectories();
         $configOptionsBuilder
-            ->describeArrayOption('directories', 'The source directories to be fixed with phpcbf.')
-            ->describeStringOption('standard', 'The default code style', 'PSR12')
-            ->describeArrayOption('excluded', 'The excluded files and folders.', [])
-        ;
-
-        $configOptionsBuilder->describeArrayOption(
-            'custom_flags',
-            'Any custom flags to pass to phpcbf. For valid flags refer to the cphpcs documentation.',
-        );
+            ->describeStringOption('standard', 'The default code style')
+            ->isRequired()
+            ->withDefaultValue('PSR12');
+        $configOptionsBuilder
+            ->describeStringListOption('excluded', 'The excluded files and folders.')
+            ->isRequired()
+            ->withDefaultValue([]);
+        $configOptionsBuilder
+            ->describeStringListOption(
+                'custom_flags',
+                'Any custom flags to pass to phpcbf. For valid flags refer to the cphpcs documentation.',
+            )
+            ->isRequired()
+            ->withDefaultValue([]);
     }
 
-    public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
-    {
-        foreach ($config['directories'] as $directory => $directoryConfig) {
-            yield $buildConfig
-                ->getTaskFactory()
-                ->buildRunPhar('phpcbf', $this->buildArguments($directory, $directoryConfig ?: $config, $buildConfig))
-                ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
-                ->build();
-        }
+    public function createDiagnosticTasks(
+        PluginConfigurationInterface $config,
+        EnvironmentInterface $environment
+    ): iterable {
+        yield $environment
+            ->getTaskFactory()
+            ->buildRunPhar('phpcbf', $this->buildArguments($config, $environment))
+            ->withWorkingDirectory($environment->getProjectConfiguration()->getProjectRootPath())
+            ->build();
     }
 
-    private function buildArguments(string $directory, array $config, BuildConfigInterface $buildConfig): array
+    private function buildArguments(PluginConfigurationInterface $config, EnvironmentInterface $environment): array
     {
-        $arguments = [];
+        $arguments   = [];
+        $arguments[] = '--standard=' . $config->getString('standard');
 
-        if (isset($config['standard'])) {
-            $arguments[] = '--standard=' . $config['standard'];
+        if ([] !== ($excluded = $config->getStringList('excluded'))) {
+            $arguments[] = '--exclude=' . implode(',', $excluded);
         }
 
-        if (isset($config['excluded'])) {
-            $arguments[] = '--exclude=' . implode(',', $config['excluded']);
-        }
-
-        if ([] !== ($values = $config['custom_flags'] ?? [])) {
-            foreach ($values as $value) {
-                $arguments[] = (string) $value;
+        if ($config->has('custom_flags')) {
+            foreach ($config->getStringList('custom_flags') as $value) {
+                $arguments[] = $value;
             }
         }
 
-        $arguments[] = $directory;
+        $arguments[] = '--parallel=' . $environment->getProjectConfiguration()->getMaxCpuCores();
 
-        return $arguments;
+        return array_merge($arguments, $config->getStringList('directories'));
     }
 };

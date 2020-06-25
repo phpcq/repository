@@ -4,84 +4,68 @@
  * Tool home: https://github.com/sebastianbergmann/phploc
  */
 
-use Phpcq\PluginApi\Version10\BuildConfigInterface;
-use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
-use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
-use Phpcq\PluginApi\Version10\OutputTransformerFactoryInterface;
-use Phpcq\PluginApi\Version10\OutputTransformerInterface;
-use Phpcq\PluginApi\Version10\ReportInterface;
-use Phpcq\PluginApi\Version10\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationBuilderInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationInterface;
+use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
+use Phpcq\PluginApi\Version10\EnvironmentInterface;
+use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
+use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
+use Phpcq\PluginApi\Version10\Report\ToolReportInterface;
 
-return new class implements ConfigurationPluginInterface {
+return new class implements DiagnosticsPluginInterface {
     public function getName(): string
     {
         return 'phploc';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
+    public function describeConfiguration(PluginConfigurationBuilderInterface $configOptionsBuilder): void
     {
-        $configOptionsBuilder->describeArrayOption('output', 'List of outputs to use.');
-
-        $configOptionsBuilder->describeArrayOption(
-            'custom_flags',
-            'Any custom flags to pass to phploc. For valid flags refer to the phploc documentation.'
-        );
-
-        $configOptionsBuilder->describeArrayOption('directories', 'Source directories to be analyzed with phploc.');
+        $configOptionsBuilder->supportDirectories();
+        $configOptionsBuilder
+            ->describeStringListOption(
+                'excluded',
+                'List of excluded files.'
+            )
+            ->withDefaultValue([])
+            ->isRequired()
+            ->withNormalizer(static function ($value) { return trim($value); });
+        $configOptionsBuilder
+            ->describeStringListOption(
+                'custom_flags',
+                'Any custom flags to pass to phploc. For valid flags refer to the phploc documentation.'
+            )
+            ->withDefaultValue([])
+            ->isRequired();
     }
 
-    public function processConfig(array $config, BuildConfigInterface $buildConfig): iterable
-    {
-        [$should, $excluded] = $this->processDirectories($config['directories']);
+    public function createDiagnosticTasks(
+        PluginConfigurationInterface $config,
+        EnvironmentInterface $buildConfig
+    ): iterable {
+        $directories = $config->getStringList('directories');
+
         $args = [
             '--log-xml',
             $logFile = $buildConfig->getUniqueTempFile($this, 'log.xml')
         ];
-        if ([] !== $excluded) {
-            foreach ($excluded as $path) {
-                if ('' === ($path = trim($path))) {
-                    continue;
-                }
+        if ($config->has('excluded')) {
+            foreach ($config->getStringList('excluded') as $path) {
                 $args[] = '--exclude=' . $path;
             }
         }
 
-        if ([] !== ($values = $config['custom_flags'] ?? [])) {
-            foreach ($values as $value) {
-                $args[] = (string) $value;
+        if ($config->has('custom_flags')) {
+            foreach ($config->getStringList('custom_flags') as $value) {
+                $args[] = $value;
             }
         }
 
         yield $buildConfig
             ->getTaskFactory()
-            ->buildRunPhar('phploc', array_merge($args, $should))
+            ->buildRunPhar('phploc', array_merge($args, $directories))
             ->withOutputTransformer($this->createOutputTransformer($logFile))
             ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
             ->build();
-    }
-
-    /**
-     * Process the directory list.
-     *
-     * @param array $directories The directory list.
-     *
-     * @return array
-     */
-    private function processDirectories(array $directories): array
-    {
-        $should  = [];
-        $exclude = [];
-        foreach ($directories as $directory => $dirConfig) {
-            $should[] = $directory;
-            if (null !== $dirConfig) {
-                if (isset($dirConfig['excluded'])) {
-                    foreach ($dirConfig['excluded'] as $excl) {
-                        $exclude[] = $directory . '/' . $excl;
-                    }
-                }
-            }
-        }
-        return [$should, $exclude];
     }
 
     private function createOutputTransformer(string $xmlFile): OutputTransformerFactoryInterface
@@ -177,7 +161,9 @@ return new class implements ConfigurationPluginInterface {
 
                         if (!$rootNode instanceof DOMNode) {
                             $this->report->close(
-                                $exitCode === 0 ? ReportInterface::STATUS_PASSED : ReportInterface::STATUS_FAILED
+                                $exitCode === 0
+                                    ? ToolReportInterface::STATUS_PASSED
+                                    : ToolReportInterface::STATUS_FAILED
                             );
                             return;
                         }
@@ -202,8 +188,8 @@ return new class implements ConfigurationPluginInterface {
 
                         $this->report->close(
                             $exitCode === 0
-                                ? ReportInterface::STATUS_PASSED
-                                : ReportInterface::STATUS_FAILED
+                                ? ToolReportInterface::STATUS_PASSED
+                                : ToolReportInterface::STATUS_FAILED
                         );
                     }
 

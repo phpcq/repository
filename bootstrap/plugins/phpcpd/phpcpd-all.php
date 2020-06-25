@@ -6,159 +6,122 @@
 
 declare(strict_types=1);
 
-use Phpcq\PluginApi\Version10\BuildConfigInterface;
-use Phpcq\PluginApi\Version10\ConfigurationOptionsBuilderInterface;
-use Phpcq\PluginApi\Version10\ConfigurationPluginInterface;
-use Phpcq\PluginApi\Version10\InvalidConfigException;
-use Phpcq\PluginApi\Version10\OutputTransformerFactoryInterface;
-use Phpcq\PluginApi\Version10\OutputTransformerInterface;
-use Phpcq\PluginApi\Version10\ReportInterface;
-use Phpcq\PluginApi\Version10\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationBuilderInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationInterface;
+use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
+use Phpcq\PluginApi\Version10\EnvironmentInterface;
+use Phpcq\PluginApi\Version10\Exception\InvalidConfigurationException;
+use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
+use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
+use Phpcq\PluginApi\Version10\Report\ToolReportInterface;
 
-return new class implements ConfigurationPluginInterface {
+return new class implements DiagnosticsPluginInterface {
     public function getName(): string
     {
         return 'phpcpd';
     }
 
-    public function describeOptions(ConfigurationOptionsBuilderInterface $configOptionsBuilder): void
+    public function describeConfiguration(PluginConfigurationBuilderInterface $configOptionsBuilder): void
     {
-        $configOptionsBuilder->describeArrayOption(
-            'names',
-            'A list of file names to check.',
-            ['*.php']
-        );
+        $configOptionsBuilder->supportDirectories();
+        $configOptionsBuilder
+            ->describeStringListOption('names', 'A list of file names to check.')
+            ->isRequired()
+            ->withDefaultValue(['*.php']);
 
-        $configOptionsBuilder->describeArrayOption(
-            'names_exclude',
-            'A list of file names to exclude.'
-        );
+        $configOptionsBuilder
+            ->describeStringListOption('names_exclude', 'A list of file names to exclude.');
 
-        $configOptionsBuilder->describeArrayOption(
+        $configOptionsBuilder->describeStringListOption(
             'regexps_exclude',
             'A list of paths regexps to exclude (example: "#var/.*_tmp#")'
         );
 
-        $configOptionsBuilder->describeIntOption(
-            'min_lines',
-            'Minimum number of identical lines.',
-            5
-        );
+        $configOptionsBuilder
+            ->describeIntOption('min_lines', 'Minimum number of identical lines.')
+            ->isRequired()
+            ->withDefaultValue(5);
 
-        $configOptionsBuilder->describeIntOption(
-            'min_tokens',
-            'Minimum number of identical tokens.',
-            70
-        );
+        $configOptionsBuilder
+            ->describeIntOption('min_tokens', 'Minimum number of identical tokens.')
+            ->isRequired()
+            ->withDefaultValue(70);
 
-        $configOptionsBuilder->describeBoolOption(
-            'fuzzy',
-            'Fuzz variable names',
-            false
-        );
+        $configOptionsBuilder
+            ->describeBoolOption('fuzzy', 'Fuzz variable names')
+            ->isRequired()
+            ->withDefaultValue(false);
 
-        $configOptionsBuilder->describeArrayOption(
-            'custom_flags',
-            'Any custom flags to pass to phpcpd. For valid flags refer to the phpcpd documentation.'
-        );
+        $configOptionsBuilder
+            ->describeStringListOption(
+                'custom_flags',
+                'Any custom flags to pass to phpcpd. For valid flags refer to the phpcpd documentation.'
+            )
+            ->withDefaultValue([])
+            ->isRequired();
 
-        $configOptionsBuilder->describeArrayOption(
-            'directories',
-            'Source directories to be analyzed with phpcpd.'
-        );
+        $severityText = implode('", "', [
+            ToolReportInterface::SEVERITY_NONE,
+            ToolReportInterface::SEVERITY_INFO,
+            ToolReportInterface::SEVERITY_MARGINAL,
+            ToolReportInterface::SEVERITY_MINOR,
+            ToolReportInterface::SEVERITY_MAJOR,
+            ToolReportInterface::SEVERITY_FATAL,
+        ]);
 
-        $configOptionsBuilder->describeStringOption(
-            'severity',
-            'Severity for detected duplications. Must be one of "' . ToolReportInterface::SEVERITY_INFO . '", "'
-            . ToolReportInterface::SEVERITY_NOTICE . '", "' . ToolReportInterface::SEVERITY_WARNING . '" or "'
-            . ToolReportInterface::SEVERITY_ERROR . '"',
-            ToolReportInterface::SEVERITY_WARNING
-        );
+        $configOptionsBuilder
+            ->describeStringOption(
+                'severity',
+                'Severity for detected duplications. Must be one of "' . $severityText . '"',
+            )
+            ->isRequired()
+            ->withDefaultValue(ToolReportInterface::SEVERITY_MINOR);
     }
 
-    public function processConfig(array $toolConfig, BuildConfigInterface $buildConfig): iterable
-    {
-        foreach ($this->processDirectories($toolConfig) as $config) {
-            $args = [
-                '--log-pmd',
-                $logFile = $buildConfig->getUniqueTempFile($this, 'pmd-cpd.xml')
-            ];
-
-            if ('' !== ($values = $this->commaValues($config, 'names'))) {
-                $args[] = '--names=' . $values;
-            }
-            if ('' !== ($values = $this->commaValues($config, 'names_exclude'))) {
-                $args[] = '--names-exclude=' . $values;
-            }
-            if ('' !== ($values = $this->commaValues($config, 'regexps_exclude'))) {
-                $args[] = '--regexps-exclude';
-                $args[] = $values;
-            }
-            if ('' !== ($values = $config['min_lines'] ?? '')) {
-                $args[] = '--min-lines=' . $values;
-            }
-            if ('' !== ($values = $config['min_tokens'] ?? '')) {
-                $args[] = '--min-tokens=' . $values;
-            }
-            if ($config['fuzzy'] ?? false) {
-                $args[] = '--fuzzy';
-            }
-
-            if ([] !== ($values = $config['custom_flags'] ?? [])) {
-                foreach ($values as $value) {
-                    if (strpos($value, '--log-pmd') >= 0) {
-                        throw new InvalidConfigException('Configuring a custom log file is not allowed.');
-                    }
-                    $args[] = (string) $value;
-                }
-            }
-
-            $rootDir  = $buildConfig->getProjectConfiguration()->getProjectRootPath();
-            $severity = $config['severity'] ?? ToolReportInterface::SEVERITY_WARNING;
-
-            yield $buildConfig
-                ->getTaskFactory()
-                ->buildRunPhar('phpcpd', array_merge($args, array_values($config['directories'])))
-                ->withOutputTransformer($this->createOutputTransformer($logFile, $rootDir, $severity))
-                ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
-                ->build();
-        }
-    }
-
-    /**
-     * Process the directory list.
-     *
-     * @param array $toolConfig The tool configuration
-     *
-     * @return array
-     */
-    private function processDirectories(array $toolConfig): array
-    {
-        $configs = [
-            array_merge($toolConfig, ['directories' => []])
+    public function createDiagnosticTasks(
+        PluginConfigurationInterface $config,
+        EnvironmentInterface $buildConfig
+    ): iterable {
+        $args = [
+            '--log-pmd',
+            $logFile = $buildConfig->getUniqueTempFile($this, 'pmd-cpd.xml')
         ];
 
-        foreach ($toolConfig['directories'] as $directory => $dirConfig) {
-            if (null === $dirConfig) {
-                $configs[0]['directories'][] = $directory;
-                continue;
+        if ($config->has('names')) {
+            $args[] = '--names=' . implode(',', $config->getStringList('names'));
+        }
+        if ($config->has('names_exclude')) {
+            $args[] = '--names-exclude=' . implode(',', $config->getStringList('names_exclude'));
+        }
+        if ($config->has('regexps_exclude')) {
+            $args[] = '--regexps-exclude';
+            $args[] = implode(',', $config->getStringList('regexps_exclude'));
+        }
+        $args[] = '--min-lines=' . (string) $config->getInt('min_lines');
+        $args[] = '--min-tokens=' . (string) $config->getInt('min_tokens');
+
+        if ($config->getBool('fuzzy')) {
+            $args[] = '--fuzzy';
+        }
+
+        if ($config->has('custom_flags')) {
+            foreach ($config->getStringList('custom_flags') as $value) {
+                if (strpos($value, '--log-pmd') >= 0) {
+                    throw new InvalidConfigurationException('Configuring a custom log file is not allowed.');
+                }
+                $args[] = $value;
             }
-
-            $configs[] = array_merge(
-                $dirConfig,
-                ['directories' => [$directory]]
-            );
         }
 
-        return $configs;
-    }
+        $rootDir  = $buildConfig->getProjectConfiguration()->getProjectRootPath();
+        $severity = $config->getString('severity');
 
-    private function commaValues(array $config, string $key): string
-    {
-        if (!isset($config[$key])) {
-            return '';
-        }
-        return implode(',', (array) $config[$key]);
+        yield $buildConfig
+            ->getTaskFactory()
+            ->buildRunPhar('phpcpd', array_merge($args, $config->getStringList('directories')))
+            ->withOutputTransformer($this->createOutputTransformer($logFile, $rootDir, $severity))
+            ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
+            ->build();
     }
 
     private function createOutputTransformer(
@@ -227,7 +190,9 @@ return new class implements ConfigurationPluginInterface {
 
                         if (!$rootNode instanceof DOMNode) {
                             $this->report->close(
-                                $exitCode === 0 ? ReportInterface::STATUS_PASSED : ReportInterface::STATUS_FAILED
+                                $exitCode === 0
+                                    ? ToolReportInterface::STATUS_PASSED
+                                    : ToolReportInterface::STATUS_FAILED
                             );
                             return;
                         }
@@ -257,8 +222,8 @@ return new class implements ConfigurationPluginInterface {
 
                         $this->report->close(
                             $exitCode === 0
-                                ? ReportInterface::STATUS_PASSED
-                                : ReportInterface::STATUS_FAILED
+                                ? ToolReportInterface::STATUS_PASSED
+                                : ToolReportInterface::STATUS_FAILED
                         );
                     }
 
