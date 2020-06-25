@@ -17,7 +17,6 @@ return new class implements DiagnosticsPluginInterface {
         $configOptionsBuilder->supportDirectories();
         $configOptionsBuilder
             ->describeStringOption('standard', 'The default code style')
-            ->isRequired()
             ->withDefaultValue('PSR12');
         $configOptionsBuilder
             ->describeStringListOption('excluded', 'The excluded files and folders.')
@@ -30,6 +29,11 @@ return new class implements DiagnosticsPluginInterface {
             )
             ->isRequired()
             ->withDefaultValue([]);
+        $configOptionsBuilder
+            ->describeStringListOption(
+                'standard_paths',
+                'Setting the installed standard paths as relative path to the project root dir.'
+            );
     }
 
     public function createDiagnosticTasks(
@@ -53,7 +57,10 @@ return new class implements DiagnosticsPluginInterface {
         string $tempFile
     ): array {
         $arguments = [];
-        $arguments[] = '--standard=' . $config->getString('standard');
+
+        if ($config->has('standard')) {
+            $arguments[] = '--standard=' . $config->getString('standard');
+        }
 
         if ([] !== ($excluded = $config->getStringList('excluded'))) {
             $arguments[] = '--exclude=' . implode(',', $excluded);
@@ -63,6 +70,18 @@ return new class implements DiagnosticsPluginInterface {
             foreach ($config->getStringList('custom_flags') as $value) {
                 $arguments[] = $value;
             }
+        }
+
+        if ([] !== ($standardPaths = $config->getStringList('standard_paths'))) {
+            $projectPath = $environment->getProjectConfiguration()->getProjectRootPath();
+            $arguments[] = '--runtime-set';
+            $arguments[] = 'installed_paths';
+            $arguments[] = implode(',', array_map(
+                function ($path) use ($projectPath): string {
+                    return realpath($projectPath . '/' . $path);
+                },
+                $standardPaths
+            ));
         }
 
         $arguments[] = '--parallel=' . $environment->getProjectConfiguration()->getMaxCpuCores();
