@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "16c569304e993fbf11e800e372f66b73",
+    "content-hash": "a548fa94db07d9b1085e49e2dcd3e7e1",
     "packages": [
         {
             "name": "phpcq/plugin-api",
-            "version": "dev-feature/revise-api",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpcq/plugin-api.git",
-                "reference": "36dee8d90d8648b9020fe3788199cfdeedadca85"
+                "reference": "815f8bf09d4a5e4bcf0b91f3aadc7d5744bcba2d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpcq/plugin-api/zipball/36dee8d90d8648b9020fe3788199cfdeedadca85",
-                "reference": "36dee8d90d8648b9020fe3788199cfdeedadca85",
+                "url": "https://api.github.com/repos/phpcq/plugin-api/zipball/815f8bf09d4a5e4bcf0b91f3aadc7d5744bcba2d",
+                "reference": "815f8bf09d4a5e4bcf0b91f3aadc7d5744bcba2d",
                 "shasum": ""
             },
             "require": {
@@ -69,7 +69,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2020-06-22T10:00:36+00:00"
+            "time": "2020-06-25T12:06:22+00:00"
         }
     ],
     "packages-dev": [],
