@@ -13,7 +13,7 @@ allowed_versions:
 repositories:
   # Local bootstrap files in this repo.
   bootstrap:
-    type: bootstrap
+    type: plugin
     source_dir: ./bootstrap/plugins
 
   # https://github.com/humbug/box
