@@ -196,7 +196,7 @@ return new class implements DiagnosticsPluginInterface {
                             }
                         }
                         if ('' !== $error) {
-                            $this->logDiagnostic($error, 'error');
+                            $this->logDiagnostic($error, ToolReportInterface::SEVERITY_FATAL);
                         }
                     }
 
@@ -254,7 +254,7 @@ return new class implements DiagnosticsPluginInterface {
                                     $dependency,
                                     implode('", "', $symbols)
                                 ),
-                                'error'
+                                ToolReportInterface::SEVERITY_MAJOR
                             );
                         }
                         if (!empty($unknown)) {
@@ -263,7 +263,7 @@ return new class implements DiagnosticsPluginInterface {
                                     'Unknown symbols found: "%1$s" - is there a dependency missing?',
                                     implode('", "', $unknown)
                                 ),
-                                'error'
+                                ToolReportInterface::SEVERITY_FATAL
                             );
                         }
                     }
