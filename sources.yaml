@@ -19,7 +19,7 @@ repositories:
   # https://github.com/humbug/box
   box:
     type: github
-    repository: humbug/box
+    repository: box-project/box
     tool_name: box
 
   # https://github.com/ergebnis/composer-normalize
