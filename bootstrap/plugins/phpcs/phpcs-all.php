@@ -33,7 +33,9 @@ return new class implements DiagnosticsPluginInterface {
             ->describeStringListOption(
                 'standard_paths',
                 'Setting the installed standard paths as relative path to the project root dir.'
-            );
+            )
+            ->isRequired()
+            ->withDefaultValue([]);
     }
 
     public function createDiagnosticTasks(
