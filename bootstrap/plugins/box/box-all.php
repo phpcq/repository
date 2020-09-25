@@ -559,18 +559,18 @@ return new class implements DiagnosticsPluginInterface {
 
     public function createDiagnosticTasks(
         PluginConfigurationInterface $config,
-        EnvironmentInterface $buildConfig
+        EnvironmentInterface $environment
     ): iterable {
         $contents = $this->buildConfig($config);
         // AS WE CREATE THE CONFIG IN TEMP LOCATION, WE THEREFORE NEED TO PASS THE PROJECT ROOT HERE.
-        $contents['base-path'] = $buildConfig->getProjectConfiguration()->getProjectRootPath();
+        $contents['base-path'] = $environment->getProjectConfiguration()->getProjectRootPath();
 
         $json = json_encode($contents, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         // dump options to temporary config json.
-        $configFile = $buildConfig->getUniqueTempFile($this, 'box.json');
+        $configFile = $environment->getUniqueTempFile($this, 'box.json');
         file_put_contents($configFile, $json);
 
-        yield $buildConfig
+        yield $environment
             ->getTaskFactory()
             ->buildRunPhar(
                 'box',
@@ -579,16 +579,17 @@ return new class implements DiagnosticsPluginInterface {
                     '--config',
                     $configFile,
                     '-d',
-                    $buildConfig->getProjectConfiguration()->getProjectRootPath()
+                    $environment->getProjectConfiguration()->getProjectRootPath()
                 ]
             )
-            ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
+            ->withWorkingDirectory($environment->getProjectConfiguration()->getProjectRootPath())
             ->withOutputTransformer($this->createOutputTransformer($contents))
             ->build();
     }
 
     private function buildConfig(PluginConfigurationInterface $config): array
     {
+        /** @psalm-var array<string,string> $stringMap */
         static $stringMap = [
             'algorithm'         => 'algorithm',
             'alias'             => 'alias',
@@ -612,12 +613,15 @@ return new class implements DiagnosticsPluginInterface {
             'replacement_sigil' => 'replacement-sigil',
         ];
 
+        $contents = [];
+
         foreach ($stringMap as $configKey => $remappedKey) {
             if ($config->has($configKey)) {
                 $contents[$remappedKey] = $config->getString($configKey);
             }
         }
 
+        /** @psalm-var array<string,string> $boolMap */
         static $boolMap = [
             'annotations'            => 'annotations',
             'check_requirements'     => 'check-requirements',
@@ -634,6 +638,7 @@ return new class implements DiagnosticsPluginInterface {
             }
         }
 
+        /** @psalm-var array<string,string> $stringList */
         static $stringList = [
             'blacklist'           => 'blacklist',
             'compactors'          => 'compactors',
@@ -651,14 +656,15 @@ return new class implements DiagnosticsPluginInterface {
             }
         }
 
+        /** @psalm-var array<string,string> $keyMap */
         static $keyMap = [
             'map' => 'map',
         ];
 
-        $contents = [];
-
+        $raw = $config->getValue();
         foreach ($keyMap as $configKey => $remappedKey) {
-            if (null !== $value = $config[$configKey] ?? null) {
+            /** @psalm-suppress MixedAssignment */
+            if (null !== $value = $raw[$configKey] ?? null) {
                 $contents[$remappedKey] = $value;
             }
         }
@@ -689,15 +695,13 @@ return new class implements DiagnosticsPluginInterface {
         if ($config->has('stub')) {
             switch ($config->getString('stub')) {
                 case 'default':
-                    $value = true;
+                    $contents['stub'] = true;
                     break;
                 case '':
-                    $value = false;
+                    $contents['stub'] = false;
                     break;
                 default:
             }
-
-            $contents['stub'] = $value;
         }
 
         if ($config->has('map')) {
