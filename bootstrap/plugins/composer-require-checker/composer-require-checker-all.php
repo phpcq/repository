@@ -9,6 +9,15 @@ use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
 use Phpcq\PluginApi\Version10\Report\TaskReportInterface;
 use Phpcq\PluginApi\Version10\Util\BufferedLineReader;
 
+// phpcs:disable PSR12.Files.FileHeader.IncorrectOrder - This is not the file header but psalm annotations
+/**
+ * @psalm-type TSeverity = TaskReportInterface::SEVERITY_FATAL
+ *  |TaskReportInterface::SEVERITY_MAJOR
+ *  |TaskReportInterface::SEVERITY_MINOR
+ *  |TaskReportInterface::SEVERITY_MARGINAL
+ *  |TaskReportInterface::SEVERITY_INFO
+ *  |TaskReportInterface::SEVERITY_NONE
+ */
 return new class implements DiagnosticsPluginInterface {
     public function getName(): string
     {
@@ -34,23 +43,23 @@ return new class implements DiagnosticsPluginInterface {
 
     public function createDiagnosticTasks(
         PluginConfigurationInterface $config,
-        EnvironmentInterface $buildConfig
+        EnvironmentInterface $environment
     ): iterable {
         $composerJson = $config->getString('composer_file');
 
-        yield $buildConfig
+        yield $environment
             ->getTaskFactory()
-            ->buildRunPhar('composer-require-checker', $this->buildArguments($config, $buildConfig))
-            ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
+            ->buildRunPhar('composer-require-checker', $this->buildArguments($config, $environment))
+            ->withWorkingDirectory($environment->getProjectConfiguration()->getProjectRootPath())
             ->withOutputTransformer($this->createOutputTransformerFactory($composerJson))
             ->build();
     }
 
     /** @psalm-return array<int, string> */
-    private function buildArguments(PluginConfigurationInterface $config, EnvironmentInterface $buildConfig): array
+    private function buildArguments(PluginConfigurationInterface $config, EnvironmentInterface $environment): array
     {
         $arguments   = ['check'];
-        $projectRoot = $buildConfig->getProjectConfiguration()->getProjectRootPath() . '/';
+        $projectRoot = $environment->getProjectConfiguration()->getProjectRootPath() . '/';
 
         if ($config->has('config_file')) {
             $arguments[] = '--config-file=' . $projectRoot . $config->getString('config_file');
@@ -114,6 +123,7 @@ return new class implements DiagnosticsPluginInterface {
                             : TaskReportInterface::STATUS_FAILED);
                     }
 
+                    /** @psalm-param TSeverity $severity */
                     private function logDiagnostic(string $message, string $severity): void
                     {
                         $this->report->addDiagnostic($severity, $message)->forFile($this->composerFile)->end()->end();

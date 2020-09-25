@@ -7,10 +7,10 @@ namespace Phpcq\BootstrapTest\ComposerRequireChecker;
 use Phpcq\BootstrapTest\BootstrapTestCase;
 use Phpcq\BootstrapTest\Test\BuildConfigBuilder;
 use Phpcq\BootstrapTest\ConfigurationPluginTestCaseTrait;
-use Phpcq\PluginApi\Version10\OutputInterface;
+use Phpcq\PluginApi\Version10\Output\OutputInterface;
 use Phpcq\PluginApi\Version10\Report\DiagnosticBuilderInterface;
 use Phpcq\PluginApi\Version10\Report\FileDiagnosticBuilderInterface;
-use Phpcq\PluginApi\Version10\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Report\TaskReportInterface;
 
 class ComposerRequireCheckerAllTest extends BootstrapTestCase
 {
@@ -27,7 +27,10 @@ class ComposerRequireCheckerAllTest extends BootstrapTestCase
             'runs when unconfigured' => [
                 'expected-tasks' => [
                     $this
-                        ->runPhar('composer-require-checker', ['check'])
+                        ->runPhar('composer-require-checker', [
+                            'check',
+                            BuildConfigBuilder::PROJECT_ROOT . '/composer.json',
+                            ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT)
                 ],
                 'plugin-config' => [
@@ -39,6 +42,7 @@ class ComposerRequireCheckerAllTest extends BootstrapTestCase
                         ->runPhar('composer-require-checker', [
                             'check',
                             '--config-file=' . BuildConfigBuilder::PROJECT_ROOT . '/config-file.json',
+                            BuildConfigBuilder::PROJECT_ROOT . '/composer.json',
                         ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT)
                 ],
@@ -94,10 +98,10 @@ class ComposerRequireCheckerAllTest extends BootstrapTestCase
     {
         return [
             [
-                'status'   => ToolReportInterface::STATUS_FAILED,
+                'status'   => TaskReportInterface::STATUS_FAILED,
                 'expected' => [
                     [
-                        'severity' => 'error',
+                        'severity' => TaskReportInterface::SEVERITY_FATAL,
                         'message'  => 'The composer dependencies have not been installed, run composer ' .
                             'install/update first',
                         'forFile'  => 'composer.json',
@@ -115,10 +119,10 @@ class ComposerRequireCheckerAllTest extends BootstrapTestCase
                 EOF
             ],
             [
-                'status'   => ToolReportInterface::STATUS_PASSED,
+                'status'   => TaskReportInterface::STATUS_PASSED,
                 'expected' => [
                     [
-                        'severity' => 'info',
+                        'severity' => TaskReportInterface::SEVERITY_INFO,
                         'message'  => 'There were no unknown symbols found.',
                         'forFile'  => 'composer.json',
                     ],
@@ -130,10 +134,10 @@ class ComposerRequireCheckerAllTest extends BootstrapTestCase
                 EOF
             ],
             [
-                'status'   => ToolReportInterface::STATUS_FAILED,
+                'status'   => TaskReportInterface::STATUS_FAILED,
                 'expected' => [
                     [
-                        'severity' => 'error',
+                        'severity' => TaskReportInterface::SEVERITY_MAJOR,
                         'message'  => 'Missing dependency "ext-dom" (used symbols: "DOMDocument", "DOMElement")',
                         'forFile'  => 'composer.json',
                     ],
@@ -151,15 +155,15 @@ class ComposerRequireCheckerAllTest extends BootstrapTestCase
                 EOF
             ],
             [
-                'status'   => ToolReportInterface::STATUS_FAILED,
+                'status'   => TaskReportInterface::STATUS_FAILED,
                 'expected' => [
                     [
-                        'severity' => 'error',
+                        'severity' => TaskReportInterface::SEVERITY_MAJOR,
                         'message'  => 'Missing dependency "ext-dom" (used symbols: "DOMDocument", "DOMElement")',
                         'forFile'  => 'composer.json',
                     ],
                     [
-                        'severity' => 'error',
+                        'severity' => TaskReportInterface::SEVERITY_FATAL,
                         'message'  => 'Unknown symbols found: "Foo\Bar\Baz" - is there a dependency missing?',
                         'forFile'  => 'composer.json',
                     ],
@@ -183,8 +187,8 @@ class ComposerRequireCheckerAllTest extends BootstrapTestCase
     /** @dataProvider outputTransformProvider */
     public function testTransformsOutput(string $expectedStatus, array $expected, string $input): void
     {
-        $report      = $this->getMockForAbstractClass(ToolReportInterface::class);
-        $transformer = $this->mockOutputTransformer([], $report);
+        $report      = $this->getMockForAbstractClass(TaskReportInterface::class);
+        $transformer = $this->mockOutputTransformer(['composer_file' => 'composer.json'], $report);
 
         $report->expects($this->once())->method('close')->with($expectedStatus);
 
@@ -220,6 +224,6 @@ class ComposerRequireCheckerAllTest extends BootstrapTestCase
             ->willReturnOnConsecutiveCalls(...$expectedReturn);
 
         $transformer->write($input, OutputInterface::CHANNEL_STDOUT);
-        $transformer->finish($expectedStatus === ToolReportInterface::STATUS_PASSED ? 0 : 1);
+        $transformer->finish($expectedStatus === TaskReportInterface::STATUS_PASSED ? 0 : 1);
     }
 }
