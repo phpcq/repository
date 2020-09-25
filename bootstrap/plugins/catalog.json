@@ -3,70 +3,120 @@
     {
       "constraint": "*",
       "file": "box/box-all.php",
-      "plugin-version": "1.0.0"
+      "plugin-version": "1.0.0",
+      "requirements": {
+        "tool": {
+          "box": "^3.0.0"
+        }
+      }
     }
   ],
   "phpcpd": [
     {
       "constraint": "*",
       "file": "phpcpd/phpcpd-all.php",
-      "plugin-version": "1.0.0"
+      "plugin-version": "1.0.0",
+      "requirements": {
+        "tool": {
+          "phpcpd": "^3.0 || ^4.0 || ^5.0"
+        }
+      }
     }
   ],
   "phploc": [
     {
       "constraint": "*",
       "file": "phploc/phploc-all.php",
-      "plugin-version": "1.0.0"
+      "plugin-version": "1.0.0",
+      "requirements": {
+        "tool": {
+          "phploc": "^3.0 || ^4.0 || ^5.0 || ^6.0"
+        }
+      }
     }
   ],
   "phpmd": [
     {
       "constraint": "*",
       "file": "phpmd/phpmd-all.php",
-      "plugin-version": "1.0.0"
+      "plugin-version": "1.0.0",
+      "requirements": {
+        "tool": {
+          "phpmd": "^2.6.1"
+        }
+      }
     }
   ],
   "phpunit": [
     {
       "constraint": "*",
       "file": "phpunit/phpunit-all.php",
-      "plugin-version": "1.0.0"
+      "plugin-version": "1.0.0",
+      "requirements": {
+        "tool": {
+          "phpunit": "^6.0 || ^7.0 || ^8.0 || ^9.0"
+        }
+      }
     }
   ],
   "psalm": [
     {
       "constraint": "*",
       "file": "psalm/psalm-all.php",
-      "plugin-version": "1.0.0"
+      "plugin-version": "1.0.0",
+      "requirements": {
+        "tool": {
+          "psalm": "*"
+        }
+      }
     }
   ],
   "composer-require-checker": [
     {
       "constraint": "*",
       "file": "composer-require-checker/composer-require-checker-all.php",
-      "plugin-version": "1.0.0"
+      "plugin-version": "1.0.0",
+      "requirements": {
+        "tool": {
+          "composer-require-checker": "*"
+        }
+      }
     }
   ],
   "phpcs": [
     {
       "constraint": "*",
       "file": "phpcs/phpcs-all.php",
-      "plugin-version": "1.0.0"
+      "plugin-version": "1.0.0",
+      "requirements": {
+        "tool": {
+          "phpcs": "^3.0 || ^2.0"
+        }
+      }
     }
   ],
   "phpcbf": [
     {
       "constraint": "*",
       "file": "phpcbf/phpcbf-all.php",
-      "plugin-version": "1.0.0"
+      "plugin-version": "1.0.0",
+      "requirements": {
+        "tool": {
+          "phpcbf": "^3.0 || ^2.0"
+        }
+      }
     }
   ],
   "composer-normalize": [
     {
       "constraint": "*",
       "file": "composer-normalize/composer-normalize-all.php",
-      "plugin-version": "1.0.0"
+      "plugin-version": "1.0.0",
+      "requirements": {
+        "tool": {
+          "composer-normalize": "^2.1"
+        }
+      }
     }
   ]
 }
