@@ -28,11 +28,11 @@ return new class implements DiagnosticsPluginInterface {
 
     public function createDiagnosticTasks(
         PluginConfigurationInterface $config,
-        EnvironmentInterface $buildConfig
+        EnvironmentInterface $environment
     ): iterable {
         $args = [
             '--log-junit',
-            $logFile = $buildConfig->getUniqueTempFile($this, 'junit-log.xml')
+            $logFile = $environment->getUniqueTempFile($this, 'junit-log.xml')
         ];
 
         if ($config->has('custom_flags')) {
@@ -41,8 +41,8 @@ return new class implements DiagnosticsPluginInterface {
             }
         }
 
-        $projectRoot = $buildConfig->getProjectConfiguration()->getProjectRootPath();
-        yield $buildConfig
+        $projectRoot = $environment->getProjectConfiguration()->getProjectRootPath();
+        yield $environment
             ->getTaskFactory()
             ->buildRunPhar('phpunit', $args)
             ->withWorkingDirectory($projectRoot)
