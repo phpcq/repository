@@ -81,7 +81,7 @@ jobs:
         with:
           commit_message: ${{ env.COMMIT_MSG }}
           branch: ${{ env.TARGET_BRANCH }}
-          file_pattern: *.json *.php *.phar
+          file_pattern: ./*.json ./*.php ./*.phar
           repository: ${{ env.TARGET_DIRECTORY }}
           commit_user_name: PHP Code Quality Bot
           commit_user_email: phpcq-bot@users.noreply.github.com
