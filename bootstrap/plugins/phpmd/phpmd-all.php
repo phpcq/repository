@@ -10,7 +10,7 @@ use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
 use Phpcq\PluginApi\Version10\EnvironmentInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
-use Phpcq\PluginApi\Version10\Report\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Report\TaskReportInterface;
 
 return new class implements DiagnosticsPluginInterface {
     public function getName(): string
@@ -91,17 +91,17 @@ return new class implements DiagnosticsPluginInterface {
                 $this->rootDir = $rootDir;
             }
 
-            public function createFor(ToolReportInterface $report): OutputTransformerInterface
+            public function createFor(TaskReportInterface $report): OutputTransformerInterface
             {
                 return new class ($this->xmlFile, $this->rootDir, $report) implements OutputTransformerInterface {
                     /** @var string */
                     private $xmlFile;
                     /** @var string */
                     private $rootDir;
-                    /** @var ToolReportInterface */
+                    /** @var TaskReportInterface */
                     private $report;
 
-                    public function __construct(string $xmlFile, string $rootDir, ToolReportInterface $report)
+                    public function __construct(string $xmlFile, string $rootDir, TaskReportInterface $report)
                     {
                         $this->xmlFile = $xmlFile;
                         $this->rootDir = $rootDir;
@@ -123,8 +123,8 @@ return new class implements DiagnosticsPluginInterface {
                         if (!$rootNode instanceof DOMNode) {
                             $this->report->close(
                                 $exitCode === 0
-                                    ? ToolReportInterface::STATUS_PASSED
-                                    : ToolReportInterface::STATUS_FAILED
+                                    ? TaskReportInterface::STATUS_PASSED
+                                    : TaskReportInterface::STATUS_FAILED
                             );
                             return;
                         }
@@ -167,21 +167,21 @@ return new class implements DiagnosticsPluginInterface {
                                     (string) $this->getXmlAttribute($violationNode, 'externalInfoUrl', '')
                                 );
 
-                                $severity = ToolReportInterface::SEVERITY_FATAL;
+                                $severity = TaskReportInterface::SEVERITY_FATAL;
                                 if (null !== $prio = $this->getIntXmlAttribute($violationNode, 'priority')) {
                                     // FIXME: Is this mapping correct?
                                     switch ($prio) {
                                         case 1:
                                         case 2:
                                         case 3:
-                                            $severity = ToolReportInterface::SEVERITY_MAJOR;
+                                            $severity = TaskReportInterface::SEVERITY_MAJOR;
                                             break;
                                         case 4:
-                                            $severity = ToolReportInterface::SEVERITY_MINOR;
+                                            $severity = TaskReportInterface::SEVERITY_MINOR;
                                             break;
                                         case 5:
                                         default:
-                                            $severity = ToolReportInterface::SEVERITY_INFO;
+                                            $severity = TaskReportInterface::SEVERITY_INFO;
                                     }
                                 }
 
@@ -207,8 +207,8 @@ return new class implements DiagnosticsPluginInterface {
 
                         $this->report->close(
                             $exitCode === 0
-                                ? ToolReportInterface::STATUS_PASSED
-                                : ToolReportInterface::STATUS_FAILED
+                                ? TaskReportInterface::STATUS_PASSED
+                                : TaskReportInterface::STATUS_FAILED
                         );
                     }
 

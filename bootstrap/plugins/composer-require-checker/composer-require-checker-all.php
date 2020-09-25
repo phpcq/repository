@@ -6,7 +6,7 @@ use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
 use Phpcq\PluginApi\Version10\EnvironmentInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
-use Phpcq\PluginApi\Version10\Report\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Report\TaskReportInterface;
 use Phpcq\PluginApi\Version10\Util\BufferedLineReader;
 
 return new class implements DiagnosticsPluginInterface {
@@ -77,7 +77,7 @@ return new class implements DiagnosticsPluginInterface {
                 $this->composerFile = $composerFile;
             }
 
-            public function createFor(ToolReportInterface $report): OutputTransformerInterface
+            public function createFor(TaskReportInterface $report): OutputTransformerInterface
             {
                 return new class ($this->composerFile, $report) implements OutputTransformerInterface {
 
@@ -91,10 +91,10 @@ return new class implements DiagnosticsPluginInterface {
                     private $composerFile;
                     /** @var BufferedLineReader */
                     private $data;
-                    /** @var ToolReportInterface */
+                    /** @var TaskReportInterface */
                     private $report;
 
-                    public function __construct(string $composerFile, ToolReportInterface $report)
+                    public function __construct(string $composerFile, TaskReportInterface $report)
                     {
                         $this->composerFile = $composerFile;
                         $this->report       = $report;
@@ -110,8 +110,8 @@ return new class implements DiagnosticsPluginInterface {
                     {
                         $this->process();
                         $this->report->close(0 === $exitCode
-                            ? ToolReportInterface::STATUS_PASSED
-                            : ToolReportInterface::STATUS_FAILED);
+                            ? TaskReportInterface::STATUS_PASSED
+                            : TaskReportInterface::STATUS_FAILED);
                     }
 
                     private function logDiagnostic(string $message, string $severity): void
@@ -196,7 +196,7 @@ return new class implements DiagnosticsPluginInterface {
                             }
                         }
                         if ('' !== $error) {
-                            $this->logDiagnostic($error, ToolReportInterface::SEVERITY_FATAL);
+                            $this->logDiagnostic($error, TaskReportInterface::SEVERITY_FATAL);
                         }
                     }
 
@@ -254,7 +254,7 @@ return new class implements DiagnosticsPluginInterface {
                                     $dependency,
                                     implode('", "', $symbols)
                                 ),
-                                ToolReportInterface::SEVERITY_MAJOR
+                                TaskReportInterface::SEVERITY_MAJOR
                             );
                         }
                         if (!empty($unknown)) {
@@ -263,7 +263,7 @@ return new class implements DiagnosticsPluginInterface {
                                     'Unknown symbols found: "%1$s" - is there a dependency missing?',
                                     implode('", "', $unknown)
                                 ),
-                                ToolReportInterface::SEVERITY_FATAL
+                                TaskReportInterface::SEVERITY_FATAL
                             );
                         }
                     }

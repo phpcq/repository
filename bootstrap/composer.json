@@ -25,7 +25,7 @@
     "php": "^7.3",
     "ext-dom": "*",
     "ext-json": "*",
-    "phpcq/plugin-api": "^1.0@dev"
+    "phpcq/plugin-api": "dev-feature/plugin-extension"
   },
   "autoload-dev": {
     "psr-4": {

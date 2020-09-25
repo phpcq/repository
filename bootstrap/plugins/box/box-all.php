@@ -6,7 +6,7 @@ use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
 use Phpcq\PluginApi\Version10\EnvironmentInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
-use Phpcq\PluginApi\Version10\Report\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Report\TaskReportInterface;
 use Phpcq\PluginApi\Version10\Util\BufferedLineReader;
 
 return new class implements DiagnosticsPluginInterface {
@@ -730,19 +730,19 @@ return new class implements DiagnosticsPluginInterface {
                 $this->config = $config;
             }
 
-            public function createFor(ToolReportInterface $report): OutputTransformerInterface
+            public function createFor(TaskReportInterface $report): OutputTransformerInterface
             {
                 return new class ($this->config, $report) implements OutputTransformerInterface {
                     /** @var array */
                     private $config;
 
-                    /** @var ToolReportInterface */
+                    /** @var TaskReportInterface */
                     private $report;
 
                     /** @var BufferedLineReader */
                     private $buffer;
 
-                    public function __construct(array $config, ToolReportInterface $report)
+                    public function __construct(array $config, TaskReportInterface $report)
                     {
                         $this->config = $config;
                         $this->report = $report;
@@ -769,8 +769,8 @@ return new class implements DiagnosticsPluginInterface {
                         $this->report->addAttachment('execution.log')->fromString(implode("\n", $data))->end();
                         $this->report->close(
                             0 === $exitCode
-                                ? ToolReportInterface::STATUS_PASSED
-                                : ToolReportInterface::STATUS_FAILED
+                                ? TaskReportInterface::STATUS_PASSED
+                                : TaskReportInterface::STATUS_FAILED
                         );
                     }
                 };

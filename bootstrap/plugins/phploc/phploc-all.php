@@ -10,7 +10,7 @@ use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
 use Phpcq\PluginApi\Version10\EnvironmentInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
-use Phpcq\PluginApi\Version10\Report\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Report\TaskReportInterface;
 
 return new class implements DiagnosticsPluginInterface {
     public function getName(): string
@@ -78,7 +78,7 @@ return new class implements DiagnosticsPluginInterface {
                 $this->xmlFile = $xmlFile;
             }
 
-            public function createFor(ToolReportInterface $report): OutputTransformerInterface
+            public function createFor(TaskReportInterface $report): OutputTransformerInterface
             {
                 return new class ($this->xmlFile, $report) implements OutputTransformerInterface {
                     private const DICTIONARY = [
@@ -140,10 +140,10 @@ return new class implements DiagnosticsPluginInterface {
 
                     /** @var string */
                     private $xmlFile;
-                    /** @var ToolReportInterface */
+                    /** @var TaskReportInterface */
                     private $report;
 
-                    public function __construct(string $xmlFile, ToolReportInterface $report)
+                    public function __construct(string $xmlFile, TaskReportInterface $report)
                     {
                         $this->xmlFile = $xmlFile;
                         $this->report  = $report;
@@ -162,8 +162,8 @@ return new class implements DiagnosticsPluginInterface {
                         if (!$rootNode instanceof DOMNode) {
                             $this->report->close(
                                 $exitCode === 0
-                                    ? ToolReportInterface::STATUS_PASSED
-                                    : ToolReportInterface::STATUS_FAILED
+                                    ? TaskReportInterface::STATUS_PASSED
+                                    : TaskReportInterface::STATUS_FAILED
                             );
                             return;
                         }
@@ -174,7 +174,7 @@ return new class implements DiagnosticsPluginInterface {
                             }
                             $this->report
                                 ->addDiagnostic(
-                                    ToolReportInterface::SEVERITY_INFO,
+                                    TaskReportInterface::SEVERITY_INFO,
                                     sprintf('%s: %s', $this->createLabel($childNode->nodeName), $childNode->textContent)
                                 )
                                 ->fromSource($childNode->nodeName)
@@ -188,8 +188,8 @@ return new class implements DiagnosticsPluginInterface {
 
                         $this->report->close(
                             $exitCode === 0
-                                ? ToolReportInterface::STATUS_PASSED
-                                : ToolReportInterface::STATUS_FAILED
+                                ? TaskReportInterface::STATUS_PASSED
+                                : TaskReportInterface::STATUS_FAILED
                         );
                     }
 

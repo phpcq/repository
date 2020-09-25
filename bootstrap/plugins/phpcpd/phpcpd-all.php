@@ -13,7 +13,7 @@ use Phpcq\PluginApi\Version10\EnvironmentInterface;
 use Phpcq\PluginApi\Version10\Exception\InvalidConfigurationException;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
-use Phpcq\PluginApi\Version10\Report\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Report\TaskReportInterface;
 
 return new class implements DiagnosticsPluginInterface {
     public function getName(): string
@@ -61,12 +61,12 @@ return new class implements DiagnosticsPluginInterface {
             ->isRequired();
 
         $severityText = implode('", "', [
-            ToolReportInterface::SEVERITY_NONE,
-            ToolReportInterface::SEVERITY_INFO,
-            ToolReportInterface::SEVERITY_MARGINAL,
-            ToolReportInterface::SEVERITY_MINOR,
-            ToolReportInterface::SEVERITY_MAJOR,
-            ToolReportInterface::SEVERITY_FATAL,
+            TaskReportInterface::SEVERITY_NONE,
+            TaskReportInterface::SEVERITY_INFO,
+            TaskReportInterface::SEVERITY_MARGINAL,
+            TaskReportInterface::SEVERITY_MINOR,
+            TaskReportInterface::SEVERITY_MAJOR,
+            TaskReportInterface::SEVERITY_FATAL,
         ]);
 
         $configOptionsBuilder
@@ -75,7 +75,7 @@ return new class implements DiagnosticsPluginInterface {
                 'Severity for detected duplications. Must be one of "' . $severityText . '"',
             )
             ->isRequired()
-            ->withDefaultValue(ToolReportInterface::SEVERITY_MINOR);
+            ->withDefaultValue(TaskReportInterface::SEVERITY_MINOR);
     }
 
     public function createDiagnosticTasks(
@@ -146,7 +146,7 @@ return new class implements DiagnosticsPluginInterface {
                 $this->severity = $severity;
             }
 
-            public function createFor(ToolReportInterface $report): OutputTransformerInterface
+            public function createFor(TaskReportInterface $report): OutputTransformerInterface
             {
                 return new class (
                     $this->xmlFile,
@@ -156,7 +156,7 @@ return new class implements DiagnosticsPluginInterface {
                 ) implements OutputTransformerInterface {
                     /** @var string */
                     private $xmlFile;
-                    /** @var ToolReportInterface */
+                    /** @var TaskReportInterface */
                     private $report;
                     /** @var string */
                     private $rootDir;
@@ -165,7 +165,7 @@ return new class implements DiagnosticsPluginInterface {
 
                     public function __construct(
                         string $xmlFile,
-                        ToolReportInterface $report,
+                        TaskReportInterface $report,
                         string $rootDir,
                         string $severity
                     ) {
@@ -191,8 +191,8 @@ return new class implements DiagnosticsPluginInterface {
                         if (!$rootNode instanceof DOMNode) {
                             $this->report->close(
                                 $exitCode === 0
-                                    ? ToolReportInterface::STATUS_PASSED
-                                    : ToolReportInterface::STATUS_FAILED
+                                    ? TaskReportInterface::STATUS_PASSED
+                                    : TaskReportInterface::STATUS_FAILED
                             );
                             return;
                         }
@@ -203,13 +203,13 @@ return new class implements DiagnosticsPluginInterface {
                             }
 
                             $message = 'Duplicate code fragment';
-                            $toolReport = $this->report->addDiagnostic($this->severity, $message);
+                            $taskReport = $this->report->addDiagnostic($this->severity, $message);
                             $numberOfLines = (int) $childNode->getAttribute('lines');
 
                             /** @var DOMElement $fileNode */
                             foreach ($childNode->getElementsByTagName('file') as $fileNode) {
                                 $line = (int) $fileNode->getAttribute('line');
-                                $toolReport
+                                $taskReport
                                     ->forFile($this->getFileName($fileNode))
                                     ->forRange($line, null, ($line + $numberOfLines));
                             }
@@ -222,8 +222,8 @@ return new class implements DiagnosticsPluginInterface {
 
                         $this->report->close(
                             $exitCode === 0
-                                ? ToolReportInterface::STATUS_PASSED
-                                : ToolReportInterface::STATUS_FAILED
+                                ? TaskReportInterface::STATUS_PASSED
+                                : TaskReportInterface::STATUS_FAILED
                         );
                     }
 

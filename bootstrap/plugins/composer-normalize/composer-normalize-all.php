@@ -8,7 +8,7 @@ use Phpcq\PluginApi\Version10\Output\OutputInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
 use Phpcq\PluginApi\Version10\Report\ReportInterface;
-use Phpcq\PluginApi\Version10\Report\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Report\TaskReportInterface;
 use Phpcq\PluginApi\Version10\Util\BufferedLineReader;
 
 return new class implements DiagnosticsPluginInterface {
@@ -88,7 +88,7 @@ return new class implements DiagnosticsPluginInterface {
                 $this->composerFile = $composerFile;
             }
 
-            public function createFor(ToolReportInterface $report): OutputTransformerInterface
+            public function createFor(TaskReportInterface $report): OutputTransformerInterface
             {
                 return new class ($this->composerFile, $report) implements OutputTransformerInterface {
                     private const REGEX_IN_APPLICATION = '#^In Application\.php line [0-9]*:$#';
@@ -109,10 +109,10 @@ return new class implements DiagnosticsPluginInterface {
                     private $data;
                     /** @var string */
                     private $diff = '';
-                    /** @var ToolReportInterface */
+                    /** @var TaskReportInterface */
                     private $report;
 
-                    public function __construct(string $composerFile, ToolReportInterface $report)
+                    public function __construct(string $composerFile, TaskReportInterface $report)
                     {
                         $this->composerFile = $composerFile;
                         $this->report       = $report;
@@ -126,7 +126,7 @@ return new class implements DiagnosticsPluginInterface {
                             if (1 === preg_match(self::REGEX_IS_NORMALIZED, $dummy = trim($data))) {
                                 $this->logDiagnostic(
                                     $this->composerFile . ' is normalized.',
-                                    ToolReportInterface::SEVERITY_INFO
+                                    TaskReportInterface::SEVERITY_INFO
                                 );
                                 return;
                             }
@@ -195,20 +195,20 @@ return new class implements DiagnosticsPluginInterface {
                                 self::REGEX_NOT_WRITABLE => function (): void {
                                     $this->logDiagnostic(
                                         $this->composerFile . ' is not writable.',
-                                        ToolReportInterface::SEVERITY_FATAL
+                                        TaskReportInterface::SEVERITY_FATAL
                                     );
                                 },
                                 self::REGEX_NOT_NORMALIZED => function (): void {
                                     $this->logDiagnostic(
                                         $this->composerFile . ' is not normalized.',
-                                        ToolReportInterface::SEVERITY_MAJOR
+                                        TaskReportInterface::SEVERITY_MAJOR
                                     );
                                 },
                                 self::REGEX_XDEBUG_ENABLED => function (string $message): void {
-                                    $this->logDiagnostic($message, ToolReportInterface::SEVERITY_INFO);
+                                    $this->logDiagnostic($message, TaskReportInterface::SEVERITY_INFO);
                                 },
                                 self::REGEX_LOCK_OUTDATED => function (string $message): void {
-                                    $this->logDiagnostic($message, ToolReportInterface::SEVERITY_MAJOR);
+                                    $this->logDiagnostic($message, TaskReportInterface::SEVERITY_MAJOR);
                                 },
                                 self::REGEX_SCHEMA_VIOLATION => function (): void {
                                     while (null !== $line = $this->data->peek()) {
@@ -231,7 +231,7 @@ return new class implements DiagnosticsPluginInterface {
                                                 }
                                                 break;
                                             }
-                                            $this->logDiagnostic($error, ToolReportInterface::SEVERITY_FATAL);
+                                            $this->logDiagnostic($error, TaskReportInterface::SEVERITY_FATAL);
                                         }
                                         if (
                                             'See https://getcomposer.org/doc/04-schema.md for details on the schema'
@@ -243,7 +243,7 @@ return new class implements DiagnosticsPluginInterface {
                                     }
                                 },
                                 self::REGEX_SKIPPED_COMMAND => function (string $message): void {
-                                    $this->logDiagnostic($message, ToolReportInterface::SEVERITY_INFO);
+                                    $this->logDiagnostic($message, TaskReportInterface::SEVERITY_INFO);
                                 },
                             ] as $pattern => $handler
                         ) {

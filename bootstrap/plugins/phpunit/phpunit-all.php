@@ -6,7 +6,7 @@ use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
 use Phpcq\PluginApi\Version10\EnvironmentInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
-use Phpcq\PluginApi\Version10\Report\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Report\TaskReportInterface;
 use Phpcq\PluginApi\Version10\Util\JUnitReportAppender;
 
 return new class implements DiagnosticsPluginInterface {
@@ -64,17 +64,17 @@ return new class implements DiagnosticsPluginInterface {
                 $this->rootDir = $rootDir;
             }
 
-            public function createFor(ToolReportInterface $report): OutputTransformerInterface
+            public function createFor(TaskReportInterface $report): OutputTransformerInterface
             {
                 return new class ($this->logFile, $this->rootDir, $report) implements OutputTransformerInterface {
                     /** @var string */
                     private $logFile;
                     /** @var string */
                     private $rootDir;
-                    /** @var ToolReportInterface */
+                    /** @var TaskReportInterface */
                     private $report;
 
-                    public function __construct(string $logFile, string $rootDir, ToolReportInterface $report)
+                    public function __construct(string $logFile, string $rootDir, TaskReportInterface $report)
                     {
                         $this->logFile = $logFile;
                         $this->rootDir = $rootDir;
@@ -91,7 +91,7 @@ return new class implements DiagnosticsPluginInterface {
                         $this->report->addAttachment('junit-log.xml')->fromFile($this->logFile)->end();
                         JUnitReportAppender::appendFileTo($this->report, $this->logFile, $this->rootDir);
                         $this->report->close(
-                            $exitCode === 0 ? ToolReportInterface::STATUS_PASSED : ToolReportInterface::STATUS_FAILED
+                            $exitCode === 0 ? TaskReportInterface::STATUS_PASSED : TaskReportInterface::STATUS_FAILED
                         );
                     }
                 };
