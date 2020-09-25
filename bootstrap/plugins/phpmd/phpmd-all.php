@@ -40,7 +40,7 @@ return new class implements DiagnosticsPluginInterface {
 
     public function createDiagnosticTasks(
         PluginConfigurationInterface $config,
-        EnvironmentInterface $buildConfig
+        EnvironmentInterface $environment
     ): iterable {
         $directories = $config->getStringList('directories');
 
@@ -65,16 +65,16 @@ return new class implements DiagnosticsPluginInterface {
             }
         }
 
-        $xmlfile = $buildConfig->getUniqueTempFile($this, 'xml');
+        $xmlfile = $environment->getUniqueTempFile($this, 'xml');
         $args[]  = '--report-file';
         $args[]  = $xmlfile;
 
-        yield $buildConfig
+        yield $environment
             ->getTaskFactory()
             ->buildRunPhar('phpmd', $args)
-            ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
+            ->withWorkingDirectory($environment->getProjectConfiguration()->getProjectRootPath())
             ->withOutputTransformer(
-                $this->createOutputTransformer($xmlfile, $buildConfig->getProjectConfiguration()->getProjectRootPath())
+                $this->createOutputTransformer($xmlfile, $environment->getProjectConfiguration()->getProjectRootPath())
             )
             ->build();
     }
@@ -212,9 +212,6 @@ return new class implements DiagnosticsPluginInterface {
                         );
                     }
 
-                    /**
-                     * @param mixed $defaultValue
-                     */
                     private function getXmlAttribute(
                         DOMElement $element,
                         string $attribute,
