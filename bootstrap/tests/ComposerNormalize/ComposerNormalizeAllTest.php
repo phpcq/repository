@@ -7,10 +7,10 @@ namespace Phpcq\BootstrapTest\ComposerNormalize;
 use Phpcq\BootstrapTest\BootstrapTestCase;
 use Phpcq\BootstrapTest\Test\BuildConfigBuilder;
 use Phpcq\BootstrapTest\ConfigurationPluginTestCaseTrait;
-use Phpcq\PluginApi\Version10\OutputInterface;
+use Phpcq\PluginApi\Version10\Output\OutputInterface;
 use Phpcq\PluginApi\Version10\Report\DiagnosticBuilderInterface;
 use Phpcq\PluginApi\Version10\Report\FileDiagnosticBuilderInterface;
-use Phpcq\PluginApi\Version10\ToolReportInterface;
+use Phpcq\PluginApi\Version10\Report\TaskReportInterface;
 
 class ComposerNormalizeAllTest extends BootstrapTestCase
 {
@@ -27,7 +27,13 @@ class ComposerNormalizeAllTest extends BootstrapTestCase
             'runs as dry run when unconfigured' => [
                 'expected-tasks' => [
                     $this
-                        ->runPhar('composer-normalize', ['--dry-run'])
+                        ->runPhar('composer-normalize', [
+                            '--dry-run',
+                            '--indent-size',
+                            '2',
+                            '--indent-style',
+                            'space'
+                        ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT)
                 ],
                 'plugin-config' => [
@@ -36,7 +42,13 @@ class ComposerNormalizeAllTest extends BootstrapTestCase
             'passes path to composer.json' => [
                 'expected-tasks' => [
                     $this
-                        ->runPhar('composer-normalize', ['/composer.json'])
+                        ->runPhar('composer-normalize', [
+                            '/composer.json',
+                            '--indent-size',
+                            '2',
+                            '--indent-style',
+                            'space'
+                        ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT)
                 ],
                 'plugin-config' => [
@@ -61,7 +73,7 @@ class ComposerNormalizeAllTest extends BootstrapTestCase
                 'plugin-config' => [
                     'file' => '/composer.json',
                     'dry_run' => true,
-                    'indent_size' => '2',
+                    'indent_size' => 2,
                     'indent_style' => 'space',
                     'no_update_lock' => true,
                 ],
@@ -87,10 +99,10 @@ class ComposerNormalizeAllTest extends BootstrapTestCase
     {
         return [
             'Schema errors' => [
-                'status'   => ToolReportInterface::STATUS_FAILED,
+                'status'   => TaskReportInterface::STATUS_FAILED,
                 'expected' => [
                     [
-                        'severity' => 'error',
+                        'severity' => TaskReportInterface::SEVERITY_FATAL,
                         'message'  => 'authors[0] : The property foo is not defined and the definition does not ' .
                             'allow additional properties',
                         'forFile'  => 'composer.json',
@@ -105,10 +117,10 @@ class ComposerNormalizeAllTest extends BootstrapTestCase
                     "                                                                               \n\n",
             ],
             'File is not writable' => [
-                'status'   => ToolReportInterface::STATUS_FAILED,
+                'status'   => TaskReportInterface::STATUS_FAILED,
                 'expected' => [
                     [
-                        'severity' => 'error',
+                        'severity' => TaskReportInterface::SEVERITY_FATAL,
                         'message'  => 'composer.json is not writable.',
                         'forFile'  => 'composer.json',
                     ],
@@ -117,10 +129,10 @@ class ComposerNormalizeAllTest extends BootstrapTestCase
                 'input-stderr'    => "composer.json is not writable.\n",
             ],
             'Lock file is not up to date' => [
-                'status'   => ToolReportInterface::STATUS_FAILED,
+                'status'   => TaskReportInterface::STATUS_FAILED,
                 'expected' => [
                     [
-                        'severity' => 'error',
+                        'severity' => TaskReportInterface::SEVERITY_MAJOR,
                         'message'  => 'The lock file is not up to date with the latest changes in composer.json, ' .
                             'it is recommended that you run `composer update --lock`.',
                         'forFile'  => 'composer.json',
@@ -131,10 +143,10 @@ class ComposerNormalizeAllTest extends BootstrapTestCase
                     " recommended that you run `composer update --lock`.\n",
             ],
             'Original composer.json violates JSON schema' => [
-                'status'   => ToolReportInterface::STATUS_FAILED,
+                'status'   => TaskReportInterface::STATUS_FAILED,
                 'expected' => [
                     [
-                        'severity' => 'error',
+                        'severity' => TaskReportInterface::SEVERITY_FATAL,
                         'message'  => 'fake message 1.',
                         'forFile'  => 'composer.json',
                     ],
@@ -145,10 +157,10 @@ class ComposerNormalizeAllTest extends BootstrapTestCase
                     "See https://getcomposer.org/doc/04-schema.md for details on the schema\n",
             ],
             'Plugin command is already registered' => [
-                'status'   => ToolReportInterface::STATUS_PASSED,
+                'status'   => TaskReportInterface::STATUS_PASSED,
                 'expected' => [
                     [
-                        'severity' => 'notice',
+                        'severity' => TaskReportInterface::SEVERITY_INFO,
                         'message'  => 'Plugin command normalize (Localheinz\Composer\Normalize\Command'
                             . '\NormalizeCommand) would override a Composer command and has been skipped',
                         'forFile'  => 'composer.json',
@@ -164,8 +176,13 @@ class ComposerNormalizeAllTest extends BootstrapTestCase
     /** @dataProvider outputTransformProvider */
     public function testTransformsOutput(string $expectedStatus, array $expected, string $stdOut, string $stdErr): void
     {
-        $report      = $this->getMockForAbstractClass(ToolReportInterface::class);
-        $transformer = $this->mockOutputTransformer([], $report);
+        $report      = $this->getMockForAbstractClass(TaskReportInterface::class);
+        $transformer = $this->mockOutputTransformer([
+            'file'         => 'composer.json',
+            'dry_run'      => false,
+            'indent_size'  => 2,
+            'indent_style' => 'space',
+        ], $report);
 
         $report->expects($this->once())->method('close')->with($expectedStatus);
 
@@ -206,6 +223,6 @@ class ComposerNormalizeAllTest extends BootstrapTestCase
         if ('' !== $stdErr) {
             $transformer->write($stdErr, OutputInterface::CHANNEL_STDERR);
         }
-        $transformer->finish($expectedStatus === ToolReportInterface::STATUS_PASSED ? 0 : 1);
+        $transformer->finish($expectedStatus === TaskReportInterface::STATUS_PASSED ? 0 : 1);
     }
 }
