@@ -53,6 +53,7 @@ return new class implements DiagnosticsPluginInterface {
             ->build();
     }
 
+    /** @return string[] */
     private function buildArguments(
         PluginConfigurationInterface $config,
         EnvironmentInterface $environment,

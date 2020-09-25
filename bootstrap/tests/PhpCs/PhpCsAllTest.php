@@ -24,14 +24,17 @@ class PhpCsAllTest extends BootstrapTestCase
             'runs all directories when unconfigured' => [
                 'expected-tasks' => [
                     $this
-                        ->runPhar('phpcs', ['--report=checkstyle', '--report-file=checkstyle.xml', 'src'])
-                        ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
-                    $this
-                        ->runPhar('phpcs', ['--report=checkstyle', '--report-file=checkstyle.xml', 'test'])
+                        ->runPhar('phpcs', [
+                            '--parallel=0',
+                            '--report=checkstyle',
+                            '--report-file=checkstyle.xml',
+                            'src',
+                            'test'
+                        ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
+                    'directories' => ['src', 'test'],
                 ],
             ],
             'passes standard' => [
@@ -39,22 +42,16 @@ class PhpCsAllTest extends BootstrapTestCase
                     $this
                         ->runPhar('phpcs', [
                             '--standard=PSR2',
+                            '--parallel=0',
                             '--report=checkstyle',
                             '--report-file=checkstyle.xml',
                             'src',
-                        ])
-                        ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
-                    $this
-                        ->runPhar('phpcs', [
-                            '--standard=PSR2',
-                            '--report=checkstyle',
-                            '--report-file=checkstyle.xml',
                             'test',
                             ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
+                    'directories' => ['src', 'test'],
                     'standard' => 'PSR2',
                 ],
             ],
@@ -63,22 +60,16 @@ class PhpCsAllTest extends BootstrapTestCase
                     $this
                         ->runPhar('phpcs', [
                             '--exclude=excluded1,excluded2',
+                            '--parallel=0',
                             '--report=checkstyle',
                             '--report-file=checkstyle.xml',
                             'src',
-                        ])
-                        ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
-                    $this
-                        ->runPhar('phpcs', [
-                            '--exclude=excluded1,excluded2',
-                            '--report=checkstyle',
-                            '--report-file=checkstyle.xml',
                             'test',
-                            ])
+                        ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
+                    'directories' => ['src', 'test'],
                     'excluded' => ['excluded1', 'excluded2'],
                 ],
             ],
@@ -87,22 +78,16 @@ class PhpCsAllTest extends BootstrapTestCase
                     $this
                         ->runPhar('phpcs', [
                             '--custom-flag',
+                            '--parallel=0',
                             '--report=checkstyle',
                             '--report-file=checkstyle.xml',
                             'src',
-                        ])
-                        ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
-                    $this
-                        ->runPhar('phpcs', [
-                            '--custom-flag',
-                            '--report=checkstyle',
-                            '--report-file=checkstyle.xml',
                             'test',
-                            ])
+                        ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
+                    'directories' => ['src', 'test'],
                     'custom_flags' => ['--custom-flag'],
                 ],
             ],
@@ -112,23 +97,16 @@ class PhpCsAllTest extends BootstrapTestCase
                         ->runPhar('phpcs', [
                             '--standard=PSR2',
                             '--exclude=excluded1,excluded2',
+                            '--parallel=0',
                             '--report=checkstyle',
                             '--report-file=checkstyle.xml',
                             'src',
-                        ])
-                        ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
-                    $this
-                        ->runPhar('phpcs', [
-                            '--standard=PSR2',
-                            '--exclude=excluded1,excluded2',
-                            '--report=checkstyle',
-                            '--report-file=checkstyle.xml',
                             'test',
                         ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
+                    'directories' => ['src', 'test'],
                     'standard'    => 'PSR2',
                     'excluded'    => ['excluded1', 'excluded2'],
                 ],
