@@ -28,7 +28,11 @@ return new class implements DiagnosticsPluginInterface {
             )
             ->withDefaultValue([])
             ->isRequired()
-            ->withNormalizer(static function ($value) { return trim($value); });
+            ->withNormalizer(
+                static function (string $value): string {
+                    return trim($value);
+                }
+            );
         $configOptionsBuilder
             ->describeStringListOption(
                 'custom_flags',
@@ -40,13 +44,13 @@ return new class implements DiagnosticsPluginInterface {
 
     public function createDiagnosticTasks(
         PluginConfigurationInterface $config,
-        EnvironmentInterface $buildConfig
+        EnvironmentInterface $environment
     ): iterable {
         $directories = $config->getStringList('directories');
 
         $args = [
             '--log-xml',
-            $logFile = $buildConfig->getUniqueTempFile($this, 'log.xml')
+            $logFile = $environment->getUniqueTempFile($this, 'log.xml')
         ];
         if ($config->has('excluded')) {
             foreach ($config->getStringList('excluded') as $path) {
@@ -60,11 +64,11 @@ return new class implements DiagnosticsPluginInterface {
             }
         }
 
-        yield $buildConfig
+        yield $environment
             ->getTaskFactory()
             ->buildRunPhar('phploc', array_merge($args, $directories))
             ->withOutputTransformer($this->createOutputTransformer($logFile))
-            ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
+            ->withWorkingDirectory($environment->getProjectConfiguration()->getProjectRootPath())
             ->build();
     }
 
