@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Phpcq\BootstrapTest\Test;
 
 use LogicException;
-use Phpcq\PluginApi\Version10\BuildConfigInterface;
+use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationBuilderInterface;
+use Phpcq\PluginApi\Version10\EnvironmentInterface;
 use Phpcq\PluginApi\Version10\ProjectConfigInterface;
 use Phpcq\PluginApi\Version10\Task\TaskFactoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -19,9 +20,9 @@ class BuildConfigBuilder
     public const SOURCE_DIRECTORIES = ['SRC1', 'SRC2'];
 
     /**
-     * @var MockObject|BuildConfigInterface
+     * @var MockObject|EnvironmentInterface
      */
-    private $config;
+    private $environment;
 
     /**
      * @var TestCase
@@ -56,7 +57,9 @@ class BuildConfigBuilder
     public function __construct(TestCase $testCase)
     {
         $this->testCase = $testCase;
-        $this->config = $this->testCase->getMockBuilder(BuildConfigInterface::class)->getMockForAbstractClass();
+        $this->environment = $this->testCase
+            ->getMockBuilder(EnvironmentInterface::class)
+            ->getMockForAbstractClass();
     }
 
     public function tasks(array $tasks): self
@@ -104,37 +107,37 @@ class BuildConfigBuilder
         return $this;
     }
 
-    public function build(): BuildConfigInterface
+    public function build(): EnvironmentInterface
     {
-        $this->config
+        $this->environment
             ->method('getProjectConfiguration')
             ->willReturn($this->getProjectConfiguration());
 
         $this->mockTempFiles();
 
         if (null !== $this->buildTempDir) {
-            $this->config
+            $this->environment
                 ->expects($this->testCase->atLeastOnce())
                 ->method('getBuildTempDir')
                 ->willReturn($this->buildTempDir);
-            return $this->config;
+            return $this->environment;
         }
-        $this->config->expects($this->testCase->never())->method('getBuildTempDir');
+        $this->environment->expects($this->testCase->never())->method('getBuildTempDir');
 
-        return $this->config;
+        return $this->environment;
     }
 
     private function mockTempFiles(): void
     {
         if (null !== $this->tempFiles) {
-            $this->config
+            $this->environment
                 ->expects($this->testCase->atLeastOnce(count($this->tempFiles)))
                 ->method('getUniqueTempFile')
                 ->willReturnOnConsecutiveCalls(...$this->tempFiles);
             return;
         }
 
-        $this->config->expects($this->testCase->never())->method('getUniqueTempFile');
+        $this->environment->expects($this->testCase->never())->method('getUniqueTempFile');
     }
 
     private function getProjectConfiguration(): ProjectConfigInterface
@@ -152,11 +155,11 @@ class BuildConfigBuilder
             ->getMockBuilder(TaskFactoryInterface::class)
             ->getMockForAbstractClass();
         if (empty($tasks)) {
-            $this->config->expects($this->testCase->never())->method('getTaskFactory');
+            $this->environment->expects($this->testCase->never())->method('getTaskFactory');
             return;
         }
 
-        $this->config
+        $this->environment
             ->expects($this->testCase->atLeastOnce())
             ->method('getTaskFactory')
             ->willReturn($this->taskFactory);
