@@ -102,3 +102,5 @@ tasks:
       names_exclude:
         - 'ComposerNormalizeAllTest.php'
         - 'ComposerRequireCheckerAllTest.php'
+        - 'phpcbf-all.php'
+        - 'phpcs-all.php'
