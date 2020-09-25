@@ -701,11 +701,11 @@ return new class implements DiagnosticsPluginInterface {
         }
 
         if ($config->has('map')) {
-            $contents['map'] = $config->getOptions('map')->getValue();
+            $contents['map'] = $config->getStringList('map');
         }
 
         if ($config->has('replacements')) {
-            $contents['replacements'] = $config->getOptions('replacements')->getValue();
+            $contents['replacements'] = $config->getStringList('replacements');
         }
 
         ksort($contents);
