@@ -163,7 +163,7 @@ return new class implements DiagnosticsPluginInterface {
                             $this->logDiagnostic(
                                 'Did not understand the following tool output: ' . "\n" .
                                 implode("\n", $unknown),
-                                'warning'
+                                TaskReportInterface::SEVERITY_MINOR
                             );
                             $this->report
                                 ->addAttachment('composer-normalize-raw.txt')

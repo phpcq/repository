@@ -156,7 +156,7 @@ return new class implements DiagnosticsPluginInterface {
                             $this->logDiagnostic(
                                 'Did not understand the following output from composer-require-checker: ' .
                                 implode("\n", $unknown),
-                                'warning'
+                                TaskReportInterface::SEVERITY_MINOR
                             );
                             $this->report
                                 ->addAttachment('composer-require-checker.log')
