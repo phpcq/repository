@@ -24,11 +24,18 @@ final class PhpCpdAllTest extends BootstrapTestCase
             'runs all directories when unconfigured' => [
                 'expected-tasks' => [
                     $this
-                        ->runPhar('phpcpd', ['--log-pmd', 'log-pmd.xml', 'src', 'test'])
+                        ->runPhar('phpcpd', [
+                            '--log-pmd',
+                            'log-pmd.xml',
+                            '--min-lines=5',
+                            '--min-tokens=70',
+                            'src',
+                            'test',
+                        ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
+                    'directories' => ['src', 'test'],
                 ],
             ],
             'passes names' => [
@@ -38,13 +45,15 @@ final class PhpCpdAllTest extends BootstrapTestCase
                             '--log-pmd',
                             'log-pmd.xml',
                             '--names=foo.php,bar.php',
+                            '--min-lines=5',
+                            '--min-tokens=70',
                             'src',
-                            'test'
+                            'test',
                         ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
+                    'directories' => ['src', 'test'],
                     'names' => ['foo.php', 'bar.php']
                 ],
             ],
@@ -56,13 +65,15 @@ final class PhpCpdAllTest extends BootstrapTestCase
                             'log-pmd.xml',
                             '--regexps-exclude',
                             '#foo.*#',
+                            '--min-lines=5',
+                            '--min-tokens=70',
                             'src',
-                            'test'
+                            'test',
                         ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
+                    'directories' => ['src', 'test'],
                     'regexps_exclude' => ['#foo.*#']
                 ],
             ],
@@ -72,15 +83,16 @@ final class PhpCpdAllTest extends BootstrapTestCase
                         ->runPhar('phpcpd', [
                             '--log-pmd',
                             'log-pmd.xml',
-                            '--min-lines=5',
+                            '--min-lines=1',
+                            '--min-tokens=70',
                             'src',
                             'test'
                         ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
-                    'min_lines' => 5
+                    'directories' => ['src', 'test'],
+                    'min_lines' => 1
                 ],
             ],
             'passes min tokens' => [
@@ -89,6 +101,7 @@ final class PhpCpdAllTest extends BootstrapTestCase
                         ->runPhar('phpcpd', [
                             '--log-pmd',
                             'log-pmd.xml',
+                            '--min-lines=5',
                             '--min-tokens=5',
                             'src',
                             'test'
@@ -96,7 +109,7 @@ final class PhpCpdAllTest extends BootstrapTestCase
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
+                    'directories' => ['src', 'test'],
                     'min_tokens' => 5
                 ],
             ],
@@ -106,6 +119,8 @@ final class PhpCpdAllTest extends BootstrapTestCase
                         ->runPhar('phpcpd', [
                             '--log-pmd',
                             'log-pmd.xml',
+                            '--min-lines=5',
+                            '--min-tokens=70',
                             '--fuzzy',
                             'src',
                             'test'
@@ -113,31 +128,7 @@ final class PhpCpdAllTest extends BootstrapTestCase
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
-                    'fuzzy' => true
-                ],
-            ],
-            'applies directory config' => [
-                'expected-tasks' => [
-                    $this
-                        ->runPhar('phpcpd', [
-                            '--log-pmd',
-                            'log-pmd.xml',
-                            '--fuzzy',
-                            'test'
-                        ])
-                        ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
-                    $this
-                        ->runPhar('phpcpd', [
-                            '--log-pmd',
-                            'log-pmd.xml',
-                            '--names=bar.php',
-                            'src'
-                        ])
-                        ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
-                ],
-                'plugin-config' => [
-                    'directories' => ['src' => ['names' => 'bar.php'], 'test' => null],
+                    'directories' => ['src', 'test'],
                     'fuzzy' => true
                 ],
             ],

@@ -15,6 +15,14 @@ use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
 use Phpcq\PluginApi\Version10\Report\TaskReportInterface;
 
+/**
+ * @psalm-type TSeverity = TaskReportInterface::SEVERITY_FATAL
+ *  |TaskReportInterface::SEVERITY_MAJOR
+ *  |TaskReportInterface::SEVERITY_MINOR
+ *  |TaskReportInterface::SEVERITY_MARGINAL
+ *  |TaskReportInterface::SEVERITY_INFO
+ *  |TaskReportInterface::SEVERITY_NONE
+ */
 return new class implements DiagnosticsPluginInterface {
     public function getName(): string
     {
@@ -80,11 +88,11 @@ return new class implements DiagnosticsPluginInterface {
 
     public function createDiagnosticTasks(
         PluginConfigurationInterface $config,
-        EnvironmentInterface $buildConfig
+        EnvironmentInterface $environment
     ): iterable {
         $args = [
             '--log-pmd',
-            $logFile = $buildConfig->getUniqueTempFile($this, 'pmd-cpd.xml')
+            $logFile = $environment->getUniqueTempFile($this, 'pmd-cpd.xml')
         ];
 
         if ($config->has('names')) {
@@ -113,17 +121,19 @@ return new class implements DiagnosticsPluginInterface {
             }
         }
 
-        $rootDir  = $buildConfig->getProjectConfiguration()->getProjectRootPath();
+        $rootDir  = $environment->getProjectConfiguration()->getProjectRootPath();
+        /** @psalm-var TSeverity $severity */
         $severity = $config->getString('severity');
 
-        yield $buildConfig
+        yield $environment
             ->getTaskFactory()
             ->buildRunPhar('phpcpd', array_merge($args, $config->getStringList('directories')))
             ->withOutputTransformer($this->createOutputTransformer($logFile, $rootDir, $severity))
-            ->withWorkingDirectory($buildConfig->getProjectConfiguration()->getProjectRootPath())
+            ->withWorkingDirectory($environment->getProjectConfiguration()->getProjectRootPath())
             ->build();
     }
 
+    /** @psalm-param TSeverity $severity */
     private function createOutputTransformer(
         string $xmlFile,
         string $rootDir,
@@ -136,9 +146,13 @@ return new class implements DiagnosticsPluginInterface {
             /** @var string */
             private $rootDir;
 
-            /** @var string */
+            /**
+             * @var string
+             * @psalm-var TSeverity
+             */
             private $severity;
 
+            /** @psalm-param TSeverity $severity */
             public function __construct(string $xmlFile, string $rootDir, string $severity)
             {
                 $this->xmlFile  = $xmlFile;
@@ -160,9 +174,13 @@ return new class implements DiagnosticsPluginInterface {
                     private $report;
                     /** @var string */
                     private $rootDir;
-                    /** @var string */
+                    /**
+                     * @var string
+                     * @psalm-var TSeverity
+                     */
                     private $severity;
 
+                    /** @psalm-param TSeverity $severity */
                     public function __construct(
                         string $xmlFile,
                         TaskReportInterface $report,
