@@ -76,6 +76,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.BUILDER_GITHUB_TOKEN }}
 
+      - name: List files
+        run: ls -lsa ${{ env.TARGET_BRANCH }}
+
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
