@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a548fa94db07d9b1085e49e2dcd3e7e1",
+    "content-hash": "3a799fc5764da954fdf25bcc063af2aa",
     "packages": [
         {
             "name": "phpcq/plugin-api",
-            "version": "dev-master",
+            "version": "dev-feature/plugin-extension",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpcq/plugin-api.git",
-                "reference": "815f8bf09d4a5e4bcf0b91f3aadc7d5744bcba2d"
+                "reference": "f12c03db3a46e545dfbfb3ae72d7be185cbbe139"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpcq/plugin-api/zipball/815f8bf09d4a5e4bcf0b91f3aadc7d5744bcba2d",
-                "reference": "815f8bf09d4a5e4bcf0b91f3aadc7d5744bcba2d",
+                "url": "https://api.github.com/repos/phpcq/plugin-api/zipball/f12c03db3a46e545dfbfb3ae72d7be185cbbe139",
+                "reference": "f12c03db3a46e545dfbfb3ae72d7be185cbbe139",
                 "shasum": ""
             },
             "require": {
@@ -69,7 +69,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2020-06-25T12:06:22+00:00"
+            "time": "2020-09-24T14:01:32+00:00"
         }
     ],
     "packages-dev": [],
