@@ -24,14 +24,15 @@ class PhpCbfAllTest extends BootstrapTestCase
             'runs all directories when unconfigured' => [
                 'expected-tasks' => [
                     $this
-                        ->runPhar('phpcbf', ['src'])
-                        ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
-                    $this
-                        ->runPhar('phpcbf', ['test'])
+                        ->runPhar('phpcbf', [
+                            '--parallel=0',
+                            'src',
+                            'test',
+                        ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
+                    'directories' => ['src', 'test'],
                 ],
             ],
             'passes standard' => [
@@ -39,18 +40,14 @@ class PhpCbfAllTest extends BootstrapTestCase
                     $this
                         ->runPhar('phpcbf', [
                             '--standard=PSR2',
+                            '--parallel=0',
                             'src',
-                        ])
-                        ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
-                    $this
-                        ->runPhar('phpcbf', [
-                            '--standard=PSR2',
                             'test',
-                            ])
+                        ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
+                    'directories' => ['src', 'test'],
                     'standard' => 'PSR2',
                 ],
             ],
@@ -59,18 +56,14 @@ class PhpCbfAllTest extends BootstrapTestCase
                     $this
                         ->runPhar('phpcbf', [
                             '--exclude=excluded1,excluded2',
+                            '--parallel=0',
                             'src',
-                        ])
-                        ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
-                    $this
-                        ->runPhar('phpcbf', [
-                            '--exclude=excluded1,excluded2',
                             'test',
-                            ])
+                        ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
+                    'directories' => ['src', 'test'],
                     'excluded' => ['excluded1', 'excluded2'],
                 ],
             ],
@@ -79,18 +72,14 @@ class PhpCbfAllTest extends BootstrapTestCase
                     $this
                         ->runPhar('phpcbf', [
                             '--custom-flag',
+                            '--parallel=0',
                             'src',
-                        ])
-                        ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
-                    $this
-                        ->runPhar('phpcbf', [
-                            '--custom-flag',
                             'test',
-                            ])
+                        ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
+                    'directories' => ['src', 'test'],
                     'custom_flags' => ['--custom-flag'],
                 ],
             ],
@@ -100,19 +89,14 @@ class PhpCbfAllTest extends BootstrapTestCase
                         ->runPhar('phpcbf', [
                             '--standard=PSR2',
                             '--exclude=excluded1,excluded2',
+                            '--parallel=0',
                             'src',
-                        ])
-                        ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
-                    $this
-                        ->runPhar('phpcbf', [
-                            '--standard=PSR2',
-                            '--exclude=excluded1,excluded2',
                             'test',
                         ])
                         ->withWorkingDirectory(BuildConfigBuilder::PROJECT_ROOT),
                 ],
                 'plugin-config' => [
-                    'directories' => ['src' => null, 'test' => null],
+                    'directories' => ['src', 'test'],
                     'standard'    => 'PSR2',
                     'excluded'    => ['excluded1', 'excluded2'],
                 ],

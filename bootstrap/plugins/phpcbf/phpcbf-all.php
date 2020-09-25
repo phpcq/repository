@@ -5,6 +5,15 @@ use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationInterface;
 use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
 use Phpcq\PluginApi\Version10\EnvironmentInterface;
 
+// phpcs:disable PSR12.Files.FileHeader.IncorrectOrder - This is not the file header but psalm annotations
+/**
+ * @psalm-type TSeverity = TaskReportInterface::SEVERITY_FATAL
+ *  |TaskReportInterface::SEVERITY_MAJOR
+ *  |TaskReportInterface::SEVERITY_MINOR
+ *  |TaskReportInterface::SEVERITY_MARGINAL
+ *  |TaskReportInterface::SEVERITY_INFO
+ *  |TaskReportInterface::SEVERITY_NONE
+ */
 return new class implements DiagnosticsPluginInterface {
     public function getName(): string
     {
@@ -48,6 +57,7 @@ return new class implements DiagnosticsPluginInterface {
             ->build();
     }
 
+    /** @return string[] */
     private function buildArguments(PluginConfigurationInterface $config, EnvironmentInterface $environment): array
     {
         $arguments = [];
