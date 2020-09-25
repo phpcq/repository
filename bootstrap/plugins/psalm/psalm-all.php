@@ -53,6 +53,7 @@ return new class implements DiagnosticsPluginInterface {
             ->build();
     }
 
+    /** @return string[] */
     private function buildArguments(
         PluginConfigurationInterface $config,
         EnvironmentInterface $environment,
@@ -76,7 +77,7 @@ return new class implements DiagnosticsPluginInterface {
 
         if ($config->has('custom_flags')) {
             foreach ($config->getStringList('custom_flags') as $value) {
-                $args[] = $value;
+                $arguments[] = $value;
             }
         }
 
