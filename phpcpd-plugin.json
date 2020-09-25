@@ -1,0 +1,1 @@
+{"plugins":{"phpcpd":[{"api-version":"1.0.0","version":"1.0.0","type":"php-file","url":"phpcpd-1.0.0.php","requirements":{"tool":{"phpcpd":"^3.0 || ^4.0 || ^5.0"}},"checksum":{"type":"sha-512","value":"0089b5a75b16a93ca7cac49397197704b3c8ed74a233e545986e370b488910da5b7be7020261032e93dac104c99607dfc6fa532d534ccce59282a32b15cab480"}}]}}

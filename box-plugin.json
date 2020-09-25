@@ -1,0 +1,1 @@
+{"plugins":{"box":[{"api-version":"1.0.0","version":"1.0.0","type":"php-file","url":"box-1.0.0.php","requirements":{"tool":{"box":"^3.0.0"}},"checksum":{"type":"sha-512","value":"91ea0a3061bca20c54e44ca21fb2eacb56c652642f34dba358de0dbe115ae2c7f57469ffa662cc4b48f097d031e293ea502f58d041fbdf7d22f61615eb5dc081"}}]}}
