@@ -210,7 +210,7 @@ return new class implements DiagnosticsPluginInterface {
         // https://github.com/humbug/box/blob/master/doc/configuration.md#directories-directories-and-directories-bin
         $configOptionsBuilder
             ->describeStringListOption(
-                'directories',
+                'add_directories',
                 <<<EOF
                 The directories setting is a list of directory paths relative to base-path.
                 All files will be processed by the compactors, have their placeholder values replaced
@@ -223,7 +223,7 @@ return new class implements DiagnosticsPluginInterface {
         // https://github.com/humbug/box/blob/master/doc/configuration.md#directories-directories-and-directories-bin
         $configOptionsBuilder
             ->describeStringListOption(
-                'directories_bin',
+                'add_directories_bin',
                 <<<EOF
                 The directories_bin setting is analogue to directories except the files are added to the PHAR
                 unmodified. This is suitable for the files such as images, those that contain binary data or simply a
@@ -635,18 +635,17 @@ return new class implements DiagnosticsPluginInterface {
         }
 
         static $stringList = [
-            'blacklist'       => 'blacklist',
-            'compactors'      => 'compactors',
-            // FIXME: collision with our own key "directories"
-            // 'directories'  => 'directories',
-            'directories_bin' => 'directories-bin',
-            'files'           => 'files',
-            'files_bin'       => 'files-bin',
-            'finder'          => 'finder',
-            'finder_bin'      => 'finder-bin',
+            'blacklist'           => 'blacklist',
+            'compactors'          => 'compactors',
+            'add_directories'     => 'directories',
+            'add_directories_bin' => 'directories-bin',
+            'files'               => 'files',
+            'files_bin'           => 'files-bin',
+            'finder'              => 'finder',
+            'finder_bin'          => 'finder-bin',
         ];
 
-        foreach ($boolMap as $configKey => $remappedKey) {
+        foreach ($stringList as $configKey => $remappedKey) {
             if ($config->has($configKey)) {
                 $contents[$remappedKey] = $config->getStringList($configKey);
             }
