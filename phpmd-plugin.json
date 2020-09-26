@@ -1,1 +1,0 @@
-{"plugins":{"phpmd":[{"api-version":"1.0.0","version":"1.0.0","type":"php-file","url":"phpmd-1.0.0.php","requirements":{"tool":{"phpmd":"^2.6.1"}},"checksum":{"type":"sha-512","value":"7df965e311566328e0b24df0e053ba1a98c0788ca8867648f80546998a3786f413eefc9acbe6ee0b49335917889012fdd89d5205744f643ba1f691f7602eb0a8"}}]}}

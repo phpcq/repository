@@ -1,1 +1,0 @@
-{"plugins":{"phpunit":[{"api-version":"1.0.0","version":"1.0.0","type":"php-file","url":"phpunit-1.0.0.php","requirements":{"tool":{"phpunit":"^6.0 || ^7.0 || ^8.0 || ^9.0"}},"checksum":{"type":"sha-512","value":"535f8a5d3841c486361a03d80ada1ceb363ddd63d2afccb8038cc56a34419b732222db7cd38b23fe0801dab38f8549006eea73c9fd849e0482aa0ba5ab28bc46"}}]}}

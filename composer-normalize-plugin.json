@@ -1,1 +1,0 @@
-{"plugins":{"composer-normalize":[{"api-version":"1.0.0","version":"1.0.0","type":"php-file","url":"composer-normalize-1.0.0.php","requirements":{"tool":{"composer-normalize":"^2.1"}},"checksum":{"type":"sha-512","value":"0a84b8656028b285000fa75d1f0e19a5efb156a9a738f4d41a738edb093ea8b5c392875b1167b8dbe4f644de09d6b2dfe1c39ca98f9f741dbcef2127a6f5e448"}}]}}
