@@ -1,0 +1,1 @@
+{"plugins":{"phpcbf":[{"api-version":"1.0.0","version":"1.0.0","type":"php-file","url":"phpcbf-1.0.0.php","requirements":{"tool":{"phpcbf":"^3.0 || ^2.0"}},"checksum":{"type":"sha-512","value":"2ae85756d11d97f1899636dc6b81e6fc2550889eadaa09383c1190ae7056433431843d14cf203be12fa6a642f8c42c5538680a6190c2065d3a254090a449c42c"}}]}}

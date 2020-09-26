@@ -1,0 +1,1 @@
+{"plugins":{"psalm":[{"api-version":"1.0.0","version":"1.0.0","type":"php-file","url":"psalm-1.0.0.php","requirements":{"tool":{"psalm":"*"}},"checksum":{"type":"sha-512","value":"c3acf6bfe781b2bd89a13f48f1e230d332e3fa09687f9328bdcdd3ac3ab26f3f52956a8b2483e0fe2ccfc2c4dfee20770a2dda3738ab13d127bef5f34f049130"}}]}}

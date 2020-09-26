@@ -1,0 +1,1 @@
+{"plugins":{"phploc":[{"api-version":"1.0.0","version":"1.0.0","type":"php-file","url":"phploc-1.0.0.php","requirements":{"tool":{"phploc":"^3.0 || ^4.0 || ^5.0 || ^6.0"}},"checksum":{"type":"sha-512","value":"542ca9f82db7e4a499132d48c07fcb09a2915983a652d593cdedc883bb33223eef655dbfaaaa4ad89b34f3ca93ba48f5acbd223d9cb0fc8e937995b98b012760"}}]}}
