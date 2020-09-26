@@ -79,6 +79,10 @@ jobs:
       - name: List files
         run: ls -lsa ${{ env.TARGET_DIRECTORY }}
 
+      - name: Git status
+        run: git status
+        working-directory: ${{ env.TARGET_DIRECTORY }}
+
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
