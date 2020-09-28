@@ -577,7 +577,6 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->isRequired()
             ->withDefaultValue(static::$defaults['replacements'])
             ->ofStringValue();
         // https://github.com/box-project/box/blob/master/doc/configuration.md#shebang-shebang
@@ -767,8 +766,11 @@ return new class implements DiagnosticsPluginInterface {
             $contents['map'] = $config->getStringList('map');
         }
 
-        if ($config->has('replacements')) {
-            $contents['replacements'] = $config->getOptions('replacements');
+        if (
+            $config->has('replacements')
+            && !$this->isDefault('replacements', $value = $config->getOptions('replacements'))
+        ) {
+            $contents['replacements'] = (object) $value;
         }
 
         ksort($contents);
