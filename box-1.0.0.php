@@ -10,6 +10,56 @@ use Phpcq\PluginApi\Version10\Report\TaskReportInterface;
 use Phpcq\PluginApi\Version10\Util\BufferedLineReader;
 
 return new class implements DiagnosticsPluginInterface {
+    /** @var array{
+     *   add_directories: list<string>,
+     *   add_directories_bin: list<string>,
+     *   algorithm: string,
+     *   annotations: true,
+     *   blacklist: list<string>,
+     *   check_requirements: true,
+     *   compactors: list<string>,
+     *   compression: string,
+     *   datetime_format: string,
+     *   dump_autoload: true,
+     *   exclude_composer_files: true,
+     *   exclude_dev_files: true,
+     *   files: list<string>,
+     *   files_bin: list<string>,
+     *   finder: list<string>,
+     *   finder_bin: list<string>,
+     *   force_autodiscovery: false,
+     *   intercept: false,
+     *   php_scoper: string,
+     *   replacement_sigil: string,
+     *   replacements: array<string, string>,
+     *   stub: string
+     * }
+     */
+    private static $defaults = [
+        'algorithm'              => 'SHA1',
+        'annotations'            => true,
+        'blacklist'              => [],
+        'check_requirements'     => true,
+        'compactors'             => [],
+        'compression'            => 'NONE',
+        'datetime_format'        => 'Y-m-d H:i:s T',
+        'add_directories'        => [],
+        'add_directories_bin'    => [],
+        'dump_autoload'          => true,
+        'exclude_composer_files' => true,
+        'exclude_dev_files'      => true,
+        'files'                  => [],
+        'files_bin'              => [],
+        'finder'                 => [],
+        'finder_bin'             => [],
+        'force_autodiscovery'    => false,
+        'intercept'              => false,
+        'php_scoper'             => 'scoper.inc.php',
+        'replacement_sigil'      => '@',
+        'replacements'           => [],
+        'stub'                   => 'generated',
+    ];
+
     public function getName(): string
     {
         return 'box';
@@ -17,9 +67,9 @@ return new class implements DiagnosticsPluginInterface {
 
     public function describeConfiguration(PluginConfigurationBuilderInterface $configOptionsBuilder): void
     {
-        // See https://github.com/humbug/box/blob/master/doc/configuration.md
+        // See https://github.com/box-project/box/blob/master/doc/configuration.md
 
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#signing-algorithm-algorithm
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#signing-algorithm-algorithm
         $configOptionsBuilder
             ->describeStringOption(
                 'algorithm',
@@ -39,8 +89,8 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->withDefaultValue('SHA1');
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#alias-alias
+            ->withDefaultValue(static::$defaults['algorithm']);
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#alias-alias
         $configOptionsBuilder
             ->describeStringOption(
                 'alias',
@@ -53,7 +103,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#annotations-annotations
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#annotations-annotations
         // FIXME: this can also be a hash map with another hash map at key "ignore"
         // FIXME: using the names of the annotations as keys of the sub map. How to address?
         $configOptionsBuilder
@@ -66,8 +116,8 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->withDefaultValue(true);
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#banner-banner
+            ->withDefaultValue(static::$defaults['annotations']);
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#banner-banner
         $configOptionsBuilder
             ->describeStringOption(
                 'banner',
@@ -78,7 +128,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#banner-file-banner-file
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#banner-file-banner-file
         $configOptionsBuilder
             ->describeStringOption(
                 'banner_file',
@@ -90,7 +140,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#base-path-base-path
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#base-path-base-path
         // NOT SUPPORTED, AS WE CREATE THE CONFIG IN TEMP LOCATION AND THEREFORE NEED TO PASS THE PROJECT ROOT HERE.
         /*
         $configOptionsBuilder
@@ -105,7 +155,7 @@ return new class implements DiagnosticsPluginInterface {
                 EOF
             )
         */
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#blacklist-blacklist
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#blacklist-blacklist
         $configOptionsBuilder
             ->describeStringListOption(
                 'blacklist',
@@ -118,9 +168,9 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->withDefaultValue([])
+            ->withDefaultValue(static::$defaults['blacklist'])
             ->isRequired();
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#check-requirements-check-requirements
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#check-requirements-check-requirements
         $configOptionsBuilder
             ->describeBoolOption(
                 'check_requirements',
@@ -136,9 +186,9 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->withDefaultValue(true)
+            ->withDefaultValue(static::$defaults['check_requirements'])
             ->isRequired();
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#permissions-chmod
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#permissions-chmod
         $configOptionsBuilder
             ->describeStringOption(
                 'chmod',
@@ -150,7 +200,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#compactors-compactors
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#compactors-compactors
         $configOptionsBuilder
             ->describeStringListOption(
                 'compactors',
@@ -164,9 +214,9 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->withDefaultValue([])
+            ->withDefaultValue(static::$defaults['compactors'])
             ->isRequired();
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#compression-algorithm-compression
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#compression-algorithm-compression
         $configOptionsBuilder
             ->describeStringOption(
                 'compression',
@@ -183,8 +233,8 @@ return new class implements DiagnosticsPluginInterface {
                 EOF
             )
             ->isRequired()
-            ->withDefaultValue('NONE');
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#datetime-placeholder-datetime
+            ->withDefaultValue(static::$defaults['compression']);
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#datetime-placeholder-datetime
         $configOptionsBuilder
             ->describeStringOption(
                 'datetime',
@@ -195,7 +245,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#datetime-placeholder-format-datetime-format
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#datetime-placeholder-format-datetime-format
         $configOptionsBuilder
             ->describeStringOption(
                 'datetime_format',
@@ -205,9 +255,9 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->withDefaultValue('Y-m-d H:i:s T')
+            ->withDefaultValue(static::$defaults['datetime_format'])
             ->isRequired();
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#directories-directories-and-directories-bin
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#directories-directories-and-directories-bin
         $configOptionsBuilder
             ->describeStringListOption(
                 'add_directories',
@@ -218,9 +268,9 @@ return new class implements DiagnosticsPluginInterface {
                 Files listed in the blacklist will not be added to the PHAR.
                 EOF
             )
-            ->withDefaultValue([])
+            ->withDefaultValue(static::$defaults['add_directories'])
             ->isRequired();
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#directories-directories-and-directories-bin
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#directories-directories-and-directories-bin
         $configOptionsBuilder
             ->describeStringListOption(
                 'add_directories_bin',
@@ -231,9 +281,9 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->withDefaultValue([])
+            ->withDefaultValue(static::$defaults['add_directories_bin'])
             ->isRequired();
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#dumping-the-composer-autoloader-dump-autoload
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#dumping-the-composer-autoloader-dump-autoload
         $configOptionsBuilder
             ->describeBoolOption(
                 'dump_autoload',
@@ -249,8 +299,8 @@ return new class implements DiagnosticsPluginInterface {
                 EOF
             )
             ->isRequired()
-            ->withDefaultValue(true);
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#excluding-the-composer-files-exclude-composer-files
+            ->withDefaultValue(static::$defaults['dump_autoload']);
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#excluding-the-composer-files-exclude-composer-files
         $configOptionsBuilder
             ->describeBoolOption(
                 'exclude_composer_files',
@@ -262,8 +312,8 @@ return new class implements DiagnosticsPluginInterface {
                 EOF
             )
             ->isRequired()
-            ->withDefaultValue(true);
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#excluding-the-composer-files-exclude-composer-files
+            ->withDefaultValue(static::$defaults['exclude_composer_files']);
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#excluding-the-composer-files-exclude-composer-files
         $configOptionsBuilder
             ->describeBoolOption(
                 'exclude_dev_files',
@@ -277,8 +327,8 @@ return new class implements DiagnosticsPluginInterface {
                 EOF
             )
             ->isRequired()
-            ->withDefaultValue(true);
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#files-files-and-files-bin
+            ->withDefaultValue(static::$defaults['exclude_dev_files']);
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#files-files-and-files-bin
         $configOptionsBuilder
             ->describeStringListOption(
                 'files',
@@ -289,9 +339,9 @@ return new class implements DiagnosticsPluginInterface {
                 This setting is not affected by the blacklist setting.
                 EOF
             )
-            ->withDefaultValue([])
+            ->withDefaultValue(static::$defaults['files'])
             ->isRequired();
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#files-files-and-files-bin
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#files-files-and-files-bin
         $configOptionsBuilder
             ->describeStringListOption(
                 'files_bin',
@@ -302,9 +352,9 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->withDefaultValue([])
+            ->withDefaultValue(static::$defaults['files_bin'])
             ->isRequired();
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#finder-finder-and-finder-bin
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#finder-finder-and-finder-bin
         $configOptionsBuilder
             ->describeStringListOption(
                 'finder',
@@ -316,9 +366,9 @@ return new class implements DiagnosticsPluginInterface {
                 account for the files registered in the blacklist.
                 EOF
             )
-            ->withDefaultValue([])
+            ->withDefaultValue(static::$defaults['finder'])
             ->isRequired();
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#finder-finder-and-finder-bin
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#finder-finder-and-finder-bin
         $configOptionsBuilder
             ->describeStringListOption(
                 'finder_bin',
@@ -329,9 +379,9 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->withDefaultValue([])
+            ->withDefaultValue(static::$defaults['finder_bin'])
             ->isRequired();
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#force-auto-discovery-force-autodiscovery
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#force-auto-discovery-force-autodiscovery
         $configOptionsBuilder
             ->describeBoolOption(
                 'force_autodiscovery',
@@ -344,9 +394,9 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->withDefaultValue(false)
+            ->withDefaultValue(static::$defaults['force_autodiscovery'])
             ->isRequired();
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#pretty-git-tag-placeholder-git
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#pretty-git-tag-placeholder-git
         $configOptionsBuilder
             ->describeStringOption(
                 'git',
@@ -359,7 +409,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#git-commit-placeholder-git-commit
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#git-commit-placeholder-git-commit
         $configOptionsBuilder
             ->describeStringOption(
                 'git_commit',
@@ -370,7 +420,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#short-git-commit-placeholder-git-commit-short
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#short-git-commit-placeholder-git-commit-short
         $configOptionsBuilder
             ->describeStringOption(
                 'git_commit_short',
@@ -381,7 +431,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#git-tag-placeholder-git-tag
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#git-tag-placeholder-git-tag
         $configOptionsBuilder
             ->describeStringOption(
                 'git_tag',
@@ -394,7 +444,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#git-version-placeholder-git-version
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#git-version-placeholder-git-version
         $configOptionsBuilder
             ->describeStringOption(
                 'git_version',
@@ -407,7 +457,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#intercept-intercept
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#intercept-intercept
         $configOptionsBuilder
             ->describeBoolOption(
                 'intercept',
@@ -417,9 +467,9 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->withDefaultValue(false)
+            ->withDefaultValue(static::$defaults['intercept'])
             ->isRequired();
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#the-private-key-key
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#the-private-key-key
         $configOptionsBuilder
             ->describeStringOption(
                 'key',
@@ -431,7 +481,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#the-private-key-password-key-pass
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#the-private-key-password-key-pass
         $configOptionsBuilder
             ->describeStringOption(
                 'key_pass',
@@ -444,7 +494,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#main-main
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#main-main
         $configOptionsBuilder
             ->describeStringOption(
                 'main',
@@ -458,7 +508,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#map-map
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#map-map
         // FIXME: I almost bet this is could be described better.
         $configOptionsBuilder
             ->describePrototypeOption(
@@ -472,7 +522,7 @@ return new class implements DiagnosticsPluginInterface {
                 EOF
             )
             ->ofStringValue();
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#metadata-metadata
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#metadata-metadata
         // FIXME: how shall we support THIS? - "any" value is evil.
         $configOptionsBuilder
             ->describeStringOption(
@@ -483,7 +533,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#output-output
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#output-output
         $configOptionsBuilder
             ->describeStringOption(
                 'output',
@@ -494,7 +544,7 @@ return new class implements DiagnosticsPluginInterface {
                 file is bin/acme.php or bin/acme then the output will be bin/acme.phar.
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#php-scoper-php-scoper
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#php-scoper-php-scoper
         $configOptionsBuilder
             ->describeStringOption(
                 'php_scoper',
@@ -505,8 +555,8 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->withDefaultValue('scoper.inc.php');
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#replacement-sigil-replacement-sigil
+            ->withDefaultValue(static::$defaults['php_scoper']);
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#replacement-sigil-replacement-sigil
         $configOptionsBuilder
             ->describeStringOption(
                 'replacement_sigil',
@@ -516,8 +566,8 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->withDefaultValue('@');
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#replacements-replacements
+            ->withDefaultValue(static::$defaults['replacement_sigil']);
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#replacements-replacements
         $configOptionsBuilder
             ->describePrototypeOption(
                 'replacements',
@@ -527,10 +577,9 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->isRequired()
-            ->withDefaultValue([])
+            ->withDefaultValue(static::$defaults['replacements'])
             ->ofStringValue();
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#shebang-shebang
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#shebang-shebang
         $configOptionsBuilder
             ->describeStringOption(
                 'shebang',
@@ -541,7 +590,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             );
-        // https://github.com/humbug/box/blob/master/doc/configuration.md#stub-stub
+        // https://github.com/box-project/box/blob/master/doc/configuration.md#stub-stub
         $configOptionsBuilder
             ->describeStringOption(
                 'stub',
@@ -554,7 +603,7 @@ return new class implements DiagnosticsPluginInterface {
 
                 EOF
             )
-            ->withDefaultValue('generated');
+            ->withDefaultValue(static::$defaults['stub']);
     }
 
     public function createDiagnosticTasks(
@@ -587,6 +636,12 @@ return new class implements DiagnosticsPluginInterface {
             ->build();
     }
 
+    /** @param mixed $value */
+    private function isDefault(string $key, $value): bool
+    {
+        return array_key_exists($key, static::$defaults) && static::$defaults[$key] === $value;
+    }
+
     private function buildConfig(PluginConfigurationInterface $config): array
     {
         /** @psalm-var array<string,string> $stringMap */
@@ -616,8 +671,8 @@ return new class implements DiagnosticsPluginInterface {
         $contents = [];
 
         foreach ($stringMap as $configKey => $remappedKey) {
-            if ($config->has($configKey)) {
-                $contents[$remappedKey] = $config->getString($configKey);
+            if ($config->has($configKey) && !$this->isDefault($configKey, $value = $config->getString($configKey))) {
+                $contents[$remappedKey] = $value;
             }
         }
 
@@ -633,8 +688,8 @@ return new class implements DiagnosticsPluginInterface {
         ];
 
         foreach ($boolMap as $configKey => $remappedKey) {
-            if ($config->has($configKey)) {
-                $contents[$remappedKey] = $config->getBool($configKey);
+            if ($config->has($configKey) && !$this->isDefault($configKey, $value = $config->getBool($configKey))) {
+                $contents[$remappedKey] = $value;
             }
         }
 
@@ -651,8 +706,11 @@ return new class implements DiagnosticsPluginInterface {
         ];
 
         foreach ($stringList as $configKey => $remappedKey) {
-            if ($config->has($configKey)) {
-                $contents[$remappedKey] = $config->getStringList($configKey);
+            if (
+                $config->has($configKey)
+                && !$this->isDefault($configKey, $value = $config->getStringList($configKey))
+            ) {
+                $contents[$remappedKey] = $value;
             }
         }
 
@@ -708,8 +766,11 @@ return new class implements DiagnosticsPluginInterface {
             $contents['map'] = $config->getStringList('map');
         }
 
-        if ($config->has('replacements')) {
-            $contents['replacements'] = $config->getStringList('replacements');
+        if (
+            $config->has('replacements')
+            && !$this->isDefault('replacements', $value = $config->getOptions('replacements'))
+        ) {
+            $contents['replacements'] = (object) $value;
         }
 
         ksort($contents);
