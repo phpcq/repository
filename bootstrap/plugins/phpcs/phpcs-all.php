@@ -44,10 +44,12 @@ return new class implements DiagnosticsPluginInterface {
     ): iterable {
         $projectRoot = $environment->getProjectConfiguration()->getProjectRootPath();
         $tmpfile     = $environment->getUniqueTempFile($this, 'checkstyle.xml');
+        $threadAvail = $environment->getAvailableThreads();
 
         yield $environment
             ->getTaskFactory()
-            ->buildRunPhar('phpcs', $this->buildArguments($config, $environment, $tmpfile))
+            ->buildRunPhar('phpcs', $this->buildArguments($config, $environment, $tmpfile, $threadAvail))
+            ->withCosts($threadAvail)
             ->withWorkingDirectory($projectRoot)
             ->withOutputTransformer(CheckstyleReportAppender::transformFile($tmpfile, $projectRoot))
             ->build();
@@ -57,7 +59,8 @@ return new class implements DiagnosticsPluginInterface {
     private function buildArguments(
         PluginConfigurationInterface $config,
         EnvironmentInterface $environment,
-        string $tempFile
+        string $tempFile,
+        int $threadAvail
     ): array {
         $arguments = [];
 
@@ -87,7 +90,7 @@ return new class implements DiagnosticsPluginInterface {
             ));
         }
 
-        $arguments[] = '--parallel=' . $environment->getProjectConfiguration()->getMaxCpuCores();
+        $arguments[] = '--parallel=' . $threadAvail;
         $arguments[] = '--report=checkstyle';
         $arguments[] = '--report-file=' . $tempFile;
 
