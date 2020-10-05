@@ -48,6 +48,7 @@ return new class implements DiagnosticsPluginInterface {
         yield $environment
             ->getTaskFactory()
             ->buildRunPhar('psalm', $this->buildArguments($config, $environment, $tmpfile))
+            ->withCosts($environment->getAvailableThreads())
             ->withWorkingDirectory($projectRoot)
             ->withOutputTransformer(CheckstyleReportAppender::transformFile($tmpfile, $projectRoot))
             ->build();
@@ -81,7 +82,7 @@ return new class implements DiagnosticsPluginInterface {
             }
         }
 
-        $arguments[] = '--threads=' . $environment->getProjectConfiguration()->getMaxCpuCores();
+        $arguments[] = '--threads=' . $environment->getAvailableThreads();
         $arguments[] = '--report=' . $tempFile;
 
         return $arguments;
