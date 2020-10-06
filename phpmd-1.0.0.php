@@ -8,9 +8,11 @@ use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationBuilderInterface;
 use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationInterface;
 use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
 use Phpcq\PluginApi\Version10\EnvironmentInterface;
+use Phpcq\PluginApi\Version10\Output\OutputInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
 use Phpcq\PluginApi\Version10\Report\TaskReportInterface;
+use Phpcq\PluginApi\Version10\Util\BufferedLineReader;
 
 return new class implements DiagnosticsPluginInterface {
     public function getName(): string
@@ -100,24 +102,35 @@ return new class implements DiagnosticsPluginInterface {
                     private $rootDir;
                     /** @var TaskReportInterface */
                     private $report;
+                    /** @var BufferedLineReader */
+                    private $stdOut;
+                    /** @var BufferedLineReader */
+                    private $stdErr;
 
                     public function __construct(string $xmlFile, string $rootDir, TaskReportInterface $report)
                     {
                         $this->xmlFile = $xmlFile;
                         $this->rootDir = $rootDir;
                         $this->report  = $report;
+                        $this->stdOut  = BufferedLineReader::create();
+                        $this->stdErr  = BufferedLineReader::create();
                     }
 
 
                     public function write(string $data, int $channel): void
                     {
-                        // FIXME: do we also want to parse stdout/stderr?
+                        if (OutputInterface::CHANNEL_STDERR === $channel) {
+                            $this->stdErr->push($data);
+                            return;
+                        }
+                        $this->stdOut->push($data);
                     }
 
                     public function finish(int $exitCode): void
                     {
-                        $xmlDocument = new DOMDocument('1.0');
-                        $xmlDocument->load($this->xmlFile);
+                        if (null === $xmlDocument = $this->openReportFile()) {
+                            return;
+                        }
                         $rootNode = $xmlDocument->firstChild;
 
                         if (!$rootNode instanceof DOMNode) {
@@ -210,6 +223,44 @@ return new class implements DiagnosticsPluginInterface {
                                 ? TaskReportInterface::STATUS_PASSED
                                 : TaskReportInterface::STATUS_FAILED
                         );
+                    }
+
+                    private function openReportFile(): ?DOMDocument
+                    {
+                        if (is_readable($this->xmlFile) && filesize($this->xmlFile)) {
+                            $xmlDocument = new DOMDocument('1.0');
+                            $xmlDocument->load($this->xmlFile);
+                            return $xmlDocument;
+                        }
+                        $this->report->addDiagnostic(
+                            TaskReportInterface::SEVERITY_FATAL,
+                            'Report file was not produced: ' . $this->xmlFile
+                        );
+                        $contents = [];
+                        while (null !== $line = $this->stdOut->fetch()) {
+                            $contents[] = $line;
+                        }
+                        if (!empty($contents)) {
+                            $this->report
+                                ->addAttachment('output.log')
+                                ->fromString(implode("\n", $contents))
+                                ->setMimeType('text/plain')
+                                ->end();
+                        }
+                        $contents = [];
+                        while (null !== $line = $this->stdErr->fetch()) {
+                            $contents[] = $line;
+                        }
+                        if (!empty($contents)) {
+                            $this->report
+                                ->addAttachment('error.log')
+                                ->fromString(implode("\n", $contents))
+                                ->setMimeType('text/plain')
+                                ->end();
+                        }
+                        $this->report->close(TaskReportInterface::STATUS_FAILED);
+
+                        return null;
                     }
 
                     private function getXmlAttribute(

@@ -4,9 +4,12 @@ use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationBuilderInterface;
 use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationInterface;
 use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
 use Phpcq\PluginApi\Version10\EnvironmentInterface;
+use Phpcq\PluginApi\Version10\Exception\ReportFileNotFoundException;
+use Phpcq\PluginApi\Version10\Output\OutputInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerFactoryInterface;
 use Phpcq\PluginApi\Version10\Output\OutputTransformerInterface;
 use Phpcq\PluginApi\Version10\Report\TaskReportInterface;
+use Phpcq\PluginApi\Version10\Util\BufferedLineReader;
 use Phpcq\PluginApi\Version10\Util\JUnitReportAppender;
 
 return new class implements DiagnosticsPluginInterface {
@@ -73,23 +76,63 @@ return new class implements DiagnosticsPluginInterface {
                     private $rootDir;
                     /** @var TaskReportInterface */
                     private $report;
+                    /** @var BufferedLineReader */
+                    private $stdOut;
+                    /** @var BufferedLineReader */
+                    private $stdErr;
 
                     public function __construct(string $logFile, string $rootDir, TaskReportInterface $report)
                     {
                         $this->logFile = $logFile;
                         $this->rootDir = $rootDir;
                         $this->report  = $report;
+                        $this->stdOut  = BufferedLineReader::create();
+                        $this->stdErr  = BufferedLineReader::create();
                     }
 
                     public function write(string $data, int $channel): void
                     {
-                        // FIXME: do we also want to parse stdout/stderr?
+                        if (OutputInterface::CHANNEL_STDERR === $channel) {
+                            $this->stdErr->push($data);
+                            return;
+                        }
+                        $this->stdOut->push($data);
                     }
 
                     public function finish(int $exitCode): void
                     {
-                        $this->report->addAttachment('junit-log.xml')->fromFile($this->logFile)->end();
-                        JUnitReportAppender::appendFileTo($this->report, $this->logFile, $this->rootDir);
+                        try {
+                            JUnitReportAppender::appendFileTo($this->report, $this->logFile, $this->rootDir);
+                            $this->report->addAttachment('junit-log.xml')->fromFile($this->logFile)->end();
+                        } catch (ReportFileNotFoundException $exception) {
+                            $this->report->addDiagnostic(
+                                TaskReportInterface::SEVERITY_FATAL,
+                                'Report file was not produced: ' . $this->logFile
+                            );
+                            $contents = [];
+                            while (null !== $line = $this->stdOut->fetch()) {
+                                $contents[] = $line;
+                            }
+                            if (!empty($contents)) {
+                                $this->report
+                                    ->addAttachment('output.log')
+                                    ->fromString(implode("\n", $contents))
+                                    ->setMimeType('text/plain')
+                                    ->end();
+                            }
+                            $contents = [];
+                            while (null !== $line = $this->stdErr->fetch()) {
+                                $contents[] = $line;
+                            }
+                            if (!empty($contents)) {
+                                $this->report
+                                    ->addAttachment('error.log')
+                                    ->fromString(implode("\n", $contents))
+                                    ->setMimeType('text/plain')
+                                    ->end();
+                            }
+                            $exitCode = 1;
+                        }
                         $this->report->close(
                             $exitCode === 0 ? TaskReportInterface::STATUS_PASSED : TaskReportInterface::STATUS_FAILED
                         );

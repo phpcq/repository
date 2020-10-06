@@ -53,6 +53,7 @@ return new class implements DiagnosticsPluginInterface {
         yield $environment
             ->getTaskFactory()
             ->buildRunPhar('phpcbf', $this->buildArguments($config, $environment))
+            ->withCosts($environment->getAvailableThreads())
             ->withWorkingDirectory($environment->getProjectConfiguration()->getProjectRootPath())
             ->build();
     }
@@ -88,7 +89,7 @@ return new class implements DiagnosticsPluginInterface {
             ));
         }
 
-        $arguments[] = '--parallel=' . $environment->getProjectConfiguration()->getMaxCpuCores();
+        $arguments[] = '--parallel=' . $environment->getAvailableThreads();
 
         return array_merge($arguments, $config->getStringList('directories'));
     }
