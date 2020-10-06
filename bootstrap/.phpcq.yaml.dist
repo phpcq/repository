@@ -103,4 +103,7 @@ tasks:
         - 'ComposerNormalizeAllTest.php'
         - 'ComposerRequireCheckerAllTest.php'
         - 'phpcbf-all.php'
+        - 'phpcpd-all.php'
         - 'phpcs-all.php'
+        - 'phploc-all.php'
+        - 'phpmd-all.php'
