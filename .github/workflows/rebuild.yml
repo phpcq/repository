@@ -74,7 +74,7 @@ jobs:
           message="${message//$'\r'/'%0D'}"
           echo "COMMIT_MSG<<<EOF" >> $GITHUB_ENV
           echo $message >> $GITHUB_ENV
-          eecho 'EOF' >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.BUILDER_GITHUB_TOKEN }}
 
