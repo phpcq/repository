@@ -68,6 +68,7 @@ jobs:
         id: rebuild
         run: |
           ${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v --truncate=10000 | tee COMMIT_MSG
+          message=$(cat COMMIT_MSG)
           echo "COMMIT_MSG<<EOF" >> $GITHUB_ENV
           echo $message >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
