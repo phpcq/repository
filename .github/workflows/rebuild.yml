@@ -67,10 +67,8 @@ jobs:
       - name: Rebuild repository
         id: rebuild
         run: |
-          ${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v --truncate=10000 | tee COMMIT_MSG
-          message=$(cat COMMIT_MSG)
           echo "COMMIT_MSG<<EOF" >> $GITHUB_ENV
-          echo $message >> $GITHUB_ENV
+          ${{ env.BUILDER_DIRECTORY }}/bin/console phpcq:rebuild -v --truncate=10000
           echo 'EOF' >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.BUILDER_GITHUB_TOKEN }}
