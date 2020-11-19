@@ -72,7 +72,7 @@ jobs:
           message="${message//'%'/'%25'}"
           message="${message//$'\n'/'%0A'}"
           message="${message//$'\r'/'%0D'}"
-          echo "::set-env name=COMMIT_MSG::$message"
+          echo "COMMIT_MSG=$message" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.BUILDER_GITHUB_TOKEN }}
 
