@@ -72,7 +72,7 @@ jobs:
           message="${message//'%'/'%25'}"
           message="${message//$'\n'/'%0A'}"
           message="${message//$'\r'/'%0D'}"
-          echo "COMMIT_MSG<<<EOF" >> $GITHUB_ENV
+          echo "COMMIT_MSG<<EOF" >> $GITHUB_ENV
           echo $message >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
         env:
