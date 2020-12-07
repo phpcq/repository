@@ -1,14 +1,14 @@
 allowed_versions:
   box: ^3.8.4
   composer-normalize: ^2.1
-  composer-require-checker: '*'
+  composer-require-checker: ^2.0
   phpcbf: ^3.0 || ^2.0
   phpcpd: ^3.0 || ^4.0 || ^5.0 || ^6.0
   phpcs: ^3.0 || ^2.0
   phploc: ^3.0 || ^4.0 || ^5.0 || ^6.0 || ^7.0
   phpmd: ^2.6.1
   phpunit: ^6.0 || ^7.0 || ^8.0 || ^9.0
-  psalm: '*'
+  psalm: ^3.0 || ^4.0
 
 repositories:
   # Local bootstrap files in this repo.
