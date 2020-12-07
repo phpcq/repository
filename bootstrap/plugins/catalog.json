@@ -18,7 +18,7 @@
       "plugin-version": "1.0.0",
       "requirements": {
         "tool": {
-          "phpcpd": "^3.0 || ^4.0 || ^5.0"
+          "phpcpd": "^3.0 || ^4.0 || ^5.0 || ^6.0"
         }
       }
     }
@@ -30,7 +30,7 @@
       "plugin-version": "1.0.0",
       "requirements": {
         "tool": {
-          "phploc": "^3.0 || ^4.0 || ^5.0 || ^6.0"
+          "phploc": "^3.0 || ^4.0 || ^5.0 || ^6.0 || ^7.0"
         }
       }
     }
@@ -66,7 +66,7 @@
       "plugin-version": "1.0.0",
       "requirements": {
         "tool": {
-          "psalm": "*"
+          "psalm": "^3.0 || ^4.0"
         }
       }
     }
@@ -78,7 +78,7 @@
       "plugin-version": "1.0.0",
       "requirements": {
         "tool": {
-          "composer-require-checker": "*"
+          "composer-require-checker": "^2.0"
         }
       }
     }
