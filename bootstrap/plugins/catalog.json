@@ -78,7 +78,7 @@
       "plugin-version": "1.0.0",
       "requirements": {
         "tool": {
-          "composer-require-checker": "^2.0"
+          "composer-require-checker": "^3.0 | ^2.0"
         }
       }
     }
