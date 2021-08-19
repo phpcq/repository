@@ -1,14 +1,3 @@
-allowed_versions:
-  box: ^3.8.4
-  composer-normalize: ^2.1
-  composer-require-checker: ^3.0 | ^2.0
-  phpcbf: ^3.0 || ^2.0
-  phpcpd: ^3.0 || ^4.0 || ^5.0 || ^6.0
-  phpcs: ^3.0 || ^2.0
-  phploc: ^3.0 || ^4.0 || ^5.0 || ^6.0 || ^7.0
-  phpmd: ^2.6.1
-  phpunit: ^6.0 || ^7.0 || ^8.0 || ^9.0
-  psalm: ^3.0 || ^4.0
 
 repositories:
   # Local bootstrap files in this repo.
@@ -18,67 +7,79 @@ repositories:
 
   # https://github.com/humbug/box
   box:
-    type: github
+    type: tool-github
     repository: box-project/box
-    tool_name: box
+    tool-name: box
+    allowed-versions: ^3.8.4
 
   # https://github.com/ergebnis/composer-normalize
   composer-normalize:
-    type: github
+    type: tool-github
     repository: ergebnis/composer-normalize
-    tool_name: composer-normalize
+    tool-name: composer-normalize
+    allowed-versions: ^2.1
 
   # https://github.com/maglnet/ComposerRequireChecker
   composer-require-checker-github:
-    type: github
+    type: tool-github
     repository: maglnet/ComposerRequireChecker
-    tool_name: composer-require-checker
+    tool-name: composer-require-checker
+    allowed-versions: ^3.0 | ^2.0
 
   # https://github.com/squizlabs/PHP_CodeSniffer
   phpcbf-github:
-    type: github
+    type: tool-github
     repository: squizlabs/PHP_CodeSniffer
-    tool_name: phpcbf
+    tool-name: phpcbf
+    allowed-versions: ^3.0 || ^2.0
 
   # https://github.com/sebastianbergmann/phpcpd
   phpcpd-github:
-    type: github
+    type: tool-github
     repository: sebastianbergmann/phpcpd
-    tool_name: phpcpd
+    tool-name: phpcpd
+    allowed-versions: ^3.0 || ^4.0 || ^5.0 || ^6.0
 
   # https://github.com/squizlabs/PHP_CodeSniffer
   phpcs-github:
-    type: github
+    type: tool-github
     repository: squizlabs/PHP_CodeSniffer
-    tool_name: phpcs
+    tool-name: phpcs
+    allowed-versions: ^3.0 || ^2.0
 
   # https://github.com/sebastianbergmann/phploc
   phploc-github:
-    type: github
+    type: tool-github
     repository: sebastianbergmann/phploc
-    tool_name: phploc
+    tool-name: phploc
+    allowed-versions: ^3.0 || ^4.0 || ^5.0 || ^6.0 || ^7.0
 
   # https://github.com/phpmd/phpmd
   # https://phpmd.org
   phpmd-github:
-    type: github
+    type: tool-github
     repository: phpmd/phpmd
-    tool_name: phpmd
+    tool-name: phpmd
+    allowed-versions: ^2.6.1
 
   # https://github.com/sebastianbergmann/phpunit
   # https://phpunit.de/
   phpunit-github:
-    type: github
+    type: tool-github
     repository: sebastianbergmann/phpunit
-    tool_name: phpunit
+    tool-name: phpunit
+    allowed-versions: ^6.0 || ^7.0 || ^8.0 || ^9.0
   # This provides phpunit, phpcpd, phploc and other tools by Sebastian Bergmann.
   phar.phpunit.de:
-    type: phar.io
+    type: tool-phar.io
     url: https://phar.phpunit.de/phive.xml
+    tool-name: phpunit
+    allowed-versions: ^6.0 || ^7.0 || ^8.0 || ^9.0
 
   # https://github.com/vimeo/psalm
   # https://psalm.dev/
   psalm-github:
-    type: github
+    type: tool-github
     repository: vimeo/psalm
-    tool_name: psalm
+    tool-name: psalm
+    allowed-versions: ^3.0 || ^4.0
