@@ -1,4 +1,3 @@
-
 repositories:
   # Local bootstrap files in this repo.
   bootstrap:
@@ -47,13 +46,6 @@ repositories:
     tool-name: phpcs
     allowed-versions: ^3.0 || ^2.0
 
-  # https://github.com/sebastianbergmann/phploc
-  phploc-github:
-    type: tool-github
-    repository: sebastianbergmann/phploc
-    tool-name: phploc
-    allowed-versions: ^3.0 || ^4.0 || ^5.0 || ^6.0 || ^7.0
-
   # https://github.com/phpmd/phpmd
   # https://phpmd.org
   phpmd-github:
@@ -83,3 +75,8 @@ repositories:
     repository: vimeo/psalm
     tool-name: psalm
     allowed-versions: ^3.0 || ^4.0
+
+  plugin-github:
+    type: plugin-github
+    repositories:
+      - phpcq/plugin-phploc

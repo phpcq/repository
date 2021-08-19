@@ -23,18 +23,6 @@
       }
     }
   ],
-  "phploc": [
-    {
-      "constraint": "*",
-      "file": "phploc/phploc-all.php",
-      "plugin-version": "1.0.0",
-      "requirements": {
-        "tool": {
-          "phploc": "^3.0 || ^4.0 || ^5.0 || ^6.0 || ^7.0"
-        }
-      }
-    }
-  ],
   "phpmd": [
     {
       "constraint": "*",
