@@ -1,16 +1,4 @@
 {
-  "box": [
-    {
-      "constraint": "*",
-      "file": "box/box-all.php",
-      "plugin-version": "1.0.0",
-      "requirements": {
-        "tool": {
-          "box": "^3.0.0"
-        }
-      }
-    }
-  ],
   "phpcpd": [
     {
       "constraint": "*",

@@ -4,13 +4,6 @@ repositories:
     type: plugin
     source_dir: ./bootstrap/plugins
 
-  # https://github.com/humbug/box
-  box:
-    type: tool-github
-    repository: box-project/box
-    tool-name: box
-    allowed-versions: ^3.8.4
-
   # https://github.com/ergebnis/composer-normalize
   composer-normalize:
     type: tool-github
@@ -79,4 +72,5 @@ repositories:
   plugin-github:
     type: plugin-github
     repositories:
+      - phpcq/plugin-box
       - phpcq/plugin-phploc
