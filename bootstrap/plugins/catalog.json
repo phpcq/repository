@@ -11,18 +11,6 @@
       }
     }
   ],
-  "phpunit": [
-    {
-      "constraint": "*",
-      "file": "phpunit/phpunit-all.php",
-      "plugin-version": "1.0.0",
-      "requirements": {
-        "tool": {
-          "phpunit": "^6.0 || ^7.0 || ^8.0 || ^9.0"
-        }
-      }
-    }
-  ],
   "composer-require-checker": [
     {
       "constraint": "*",

@@ -33,20 +33,6 @@ repositories:
     tool-name: phpmd
     allowed-versions: ^2.6.1
 
-  # https://github.com/sebastianbergmann/phpunit
-  # https://phpunit.de/
-  phpunit-github:
-    type: tool-github
-    repository: sebastianbergmann/phpunit
-    tool-name: phpunit
-    allowed-versions: ^6.0 || ^7.0 || ^8.0 || ^9.0
-  # This provides phpunit, phpcpd, phploc and other tools by Sebastian Bergmann.
-  phar.phpunit.de:
-    type: tool-phar.io
-    url: https://phar.phpunit.de/phive.xml
-    tool-name: phpunit
-    allowed-versions: ^6.0 || ^7.0 || ^8.0 || ^9.0
-
   plugin-github:
     type: plugin-github
     repositories:
@@ -54,4 +40,5 @@ repositories:
       - phpcq/plugin-composer-normalize
       - phpcq/plugin-phpcpd
       - phpcq/plugin-phploc
+      - phpcq/plugin-phpunit
       - phpcq/plugin-psalm
