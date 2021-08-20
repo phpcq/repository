@@ -47,14 +47,6 @@ repositories:
     tool-name: phpunit
     allowed-versions: ^6.0 || ^7.0 || ^8.0 || ^9.0
 
-  # https://github.com/vimeo/psalm
-  # https://psalm.dev/
-  psalm-github:
-    type: tool-github
-    repository: vimeo/psalm
-    tool-name: psalm
-    allowed-versions: ^3.0 || ^4.0
-
   plugin-github:
     type: plugin-github
     repositories:
@@ -62,3 +54,4 @@ repositories:
       - phpcq/plugin-composer-normalize
       - phpcq/plugin-phpcpd
       - phpcq/plugin-phploc
+      - phpcq/plugin-psalm

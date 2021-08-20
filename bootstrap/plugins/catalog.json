@@ -23,18 +23,6 @@
       }
     }
   ],
-  "psalm": [
-    {
-      "constraint": "*",
-      "file": "psalm/psalm-all.php",
-      "plugin-version": "1.0.0",
-      "requirements": {
-        "tool": {
-          "psalm": "^3.0 || ^4.0"
-        }
-      }
-    }
-  ],
   "composer-require-checker": [
     {
       "constraint": "*",
