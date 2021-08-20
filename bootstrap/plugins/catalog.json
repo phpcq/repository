@@ -82,17 +82,5 @@
         }
       }
     }
-  ],
-  "composer-normalize": [
-    {
-      "constraint": "*",
-      "file": "composer-normalize/composer-normalize-all.php",
-      "plugin-version": "1.0.0",
-      "requirements": {
-        "tool": {
-          "composer-normalize": "^2.1"
-        }
-      }
-    }
   ]
 }

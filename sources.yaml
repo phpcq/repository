@@ -4,13 +4,6 @@ repositories:
     type: plugin
     source_dir: ./bootstrap/plugins
 
-  # https://github.com/ergebnis/composer-normalize
-  composer-normalize:
-    type: tool-github
-    repository: ergebnis/composer-normalize
-    tool-name: composer-normalize
-    allowed-versions: ^2.1
-
   # https://github.com/maglnet/ComposerRequireChecker
   composer-require-checker-github:
     type: tool-github
@@ -73,4 +66,5 @@ repositories:
     type: plugin-github
     repositories:
       - phpcq/plugin-box
+      - phpcq/plugin-composer-normalize
       - phpcq/plugin-phploc
