@@ -4,20 +4,6 @@ repositories:
     type: plugin
     source_dir: ./bootstrap/plugins
 
-  # https://github.com/squizlabs/PHP_CodeSniffer
-  phpcbf-github:
-    type: tool-github
-    repository: squizlabs/PHP_CodeSniffer
-    tool-name: phpcbf
-    allowed-versions: ^3.0 || ^2.0
-
-  # https://github.com/squizlabs/PHP_CodeSniffer
-  phpcs-github:
-    type: tool-github
-    repository: squizlabs/PHP_CodeSniffer
-    tool-name: phpcs
-    allowed-versions: ^3.0 || ^2.0
-
   plugin-github:
     type: plugin-github
     repositories:
@@ -25,6 +11,7 @@ repositories:
       - phpcq/plugin-composer-normalize
       - phpcq/plugin-composer-require-checker
       - phpcq/plugin-phpcpd
+      - phpcq/plugin-phpcs
       - phpcq/plugin-phploc
       - phpcq/plugin-phpmd
       - phpcq/plugin-phpunit
