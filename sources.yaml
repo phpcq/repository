@@ -1,9 +1,4 @@
 repositories:
-  # Local bootstrap files in this repo.
-  bootstrap:
-    type: plugin
-    source_dir: ./bootstrap/plugins
-
   plugin-github:
     type: plugin-github
     repositories:
