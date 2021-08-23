@@ -1,16 +1,4 @@
 {
-  "phpmd": [
-    {
-      "constraint": "*",
-      "file": "phpmd/phpmd-all.php",
-      "plugin-version": "1.0.0",
-      "requirements": {
-        "tool": {
-          "phpmd": "^2.6.1"
-        }
-      }
-    }
-  ],
   "phpcs": [
     {
       "constraint": "*",

@@ -18,14 +18,6 @@ repositories:
     tool-name: phpcs
     allowed-versions: ^3.0 || ^2.0
 
-  # https://github.com/phpmd/phpmd
-  # https://phpmd.org
-  phpmd-github:
-    type: tool-github
-    repository: phpmd/phpmd
-    tool-name: phpmd
-    allowed-versions: ^2.6.1
-
   plugin-github:
     type: plugin-github
     repositories:
@@ -34,5 +26,6 @@ repositories:
       - phpcq/plugin-composer-require-checker
       - phpcq/plugin-phpcpd
       - phpcq/plugin-phploc
+      - phpcq/plugin-phpmd
       - phpcq/plugin-phpunit
       - phpcq/plugin-psalm
