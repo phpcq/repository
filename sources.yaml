@@ -4,13 +4,6 @@ repositories:
     type: plugin
     source_dir: ./bootstrap/plugins
 
-  # https://github.com/maglnet/ComposerRequireChecker
-  composer-require-checker-github:
-    type: tool-github
-    repository: maglnet/ComposerRequireChecker
-    tool-name: composer-require-checker
-    allowed-versions: ^3.0 | ^2.0
-
   # https://github.com/squizlabs/PHP_CodeSniffer
   phpcbf-github:
     type: tool-github
@@ -38,6 +31,7 @@ repositories:
     repositories:
       - phpcq/plugin-box
       - phpcq/plugin-composer-normalize
+      - phpcq/plugin-composer-require-checker
       - phpcq/plugin-phpcpd
       - phpcq/plugin-phploc
       - phpcq/plugin-phpunit

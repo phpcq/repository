@@ -11,18 +11,6 @@
       }
     }
   ],
-  "composer-require-checker": [
-    {
-      "constraint": "*",
-      "file": "composer-require-checker/composer-require-checker-all.php",
-      "plugin-version": "1.0.0",
-      "requirements": {
-        "tool": {
-          "composer-require-checker": "^3.0 | ^2.0"
-        }
-      }
-    }
-  ],
   "phpcs": [
     {
       "constraint": "*",
