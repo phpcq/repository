@@ -1,84 +1,13 @@
-allowed_versions:
-  box: ^3.8.4
-  composer-normalize: ^2.1
-  composer-require-checker: ^3.0 | ^2.0
-  phpcbf: ^3.0 || ^2.0
-  phpcpd: ^3.0 || ^4.0 || ^5.0 || ^6.0
-  phpcs: ^3.0 || ^2.0
-  phploc: ^3.0 || ^4.0 || ^5.0 || ^6.0 || ^7.0
-  phpmd: ^2.6.1
-  phpunit: ^6.0 || ^7.0 || ^8.0 || ^9.0
-  psalm: ^3.0 || ^4.0
-
 repositories:
-  # Local bootstrap files in this repo.
-  bootstrap:
-    type: plugin
-    source_dir: ./bootstrap/plugins
-
-  # https://github.com/humbug/box
-  box:
-    type: github
-    repository: box-project/box
-    tool_name: box
-
-  # https://github.com/ergebnis/composer-normalize
-  composer-normalize:
-    type: github
-    repository: ergebnis/composer-normalize
-    tool_name: composer-normalize
-
-  # https://github.com/maglnet/ComposerRequireChecker
-  composer-require-checker-github:
-    type: github
-    repository: maglnet/ComposerRequireChecker
-    tool_name: composer-require-checker
-
-  # https://github.com/squizlabs/PHP_CodeSniffer
-  phpcbf-github:
-    type: github
-    repository: squizlabs/PHP_CodeSniffer
-    tool_name: phpcbf
-
-  # https://github.com/sebastianbergmann/phpcpd
-  phpcpd-github:
-    type: github
-    repository: sebastianbergmann/phpcpd
-    tool_name: phpcpd
-
-  # https://github.com/squizlabs/PHP_CodeSniffer
-  phpcs-github:
-    type: github
-    repository: squizlabs/PHP_CodeSniffer
-    tool_name: phpcs
-
-  # https://github.com/sebastianbergmann/phploc
-  phploc-github:
-    type: github
-    repository: sebastianbergmann/phploc
-    tool_name: phploc
-
-  # https://github.com/phpmd/phpmd
-  # https://phpmd.org
-  phpmd-github:
-    type: github
-    repository: phpmd/phpmd
-    tool_name: phpmd
-
-  # https://github.com/sebastianbergmann/phpunit
-  # https://phpunit.de/
-  phpunit-github:
-    type: github
-    repository: sebastianbergmann/phpunit
-    tool_name: phpunit
-  # This provides phpunit, phpcpd, phploc and other tools by Sebastian Bergmann.
-  phar.phpunit.de:
-    type: phar.io
-    url: https://phar.phpunit.de/phive.xml
-
-  # https://github.com/vimeo/psalm
-  # https://psalm.dev/
-  psalm-github:
-    type: github
-    repository: vimeo/psalm
-    tool_name: psalm
+  plugin-github:
+    type: plugin-github
+    repositories:
+      - phpcq/plugin-box
+      - phpcq/plugin-composer-normalize
+      - phpcq/plugin-composer-require-checker
+      - phpcq/plugin-phpcpd
+      - phpcq/plugin-phpcs
+      - phpcq/plugin-phploc
+      - phpcq/plugin-phpmd
+      - phpcq/plugin-phpunit
+      - phpcq/plugin-psalm
