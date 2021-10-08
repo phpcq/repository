@@ -53,7 +53,7 @@ jobs:
       - name: Cache var directory of repository-builder
         uses: actions/cache@v1
         env:
-          cache-name: repository-builder-var
+          cache-name: repository-builder-var-${{ secrets.VAR_CACHE_VERSION }}
         with:
           path: ${{ env.BUILDER_DIRECTORY }}/var
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('./sources.yaml') }}
