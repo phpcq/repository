@@ -11,3 +11,4 @@ repositories:
       - phpcq/plugin-phpmd
       - phpcq/plugin-phpunit
       - phpcq/plugin-psalm
+      - phpcq/plugin-deptrac
