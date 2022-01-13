@@ -1,0 +1,1 @@
+{"plugins":{"deptrac":[{"api-version":"1.0.0","version":"1.0.0.0","type":"php-file","url":"deptrac-1.0.0.0.php","requirements":{"php":{"php":"^7.3 || ^8.0"},"tool":{"deptrac":"^0.19"}},"checksum":{"type":"sha-512","value":"394765dd96d96b4aea4c9fa07a4c9616b680a5f96edf9e3afef4c371a220524054f14913a7105fc01f6a5735c5aa64a77976fd2afb1569f004a0b7c101be8113"}}]}}
