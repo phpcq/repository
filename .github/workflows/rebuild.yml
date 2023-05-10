@@ -24,10 +24,10 @@ jobs:
           extensions: xdebug-2.9.8
 
       - name: Pull source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install repository-builder
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: 'phpcq/repository-builder'
           path: ${{ env.BUILDER_DIRECTORY }}
@@ -65,7 +65,7 @@ jobs:
         working-directory: ${{ env.BUILDER_DIRECTORY }}
 
       - name: Checkout target directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ env.TARGET_BRANCH }}
           path: ${{ env.TARGET_DIRECTORY }}
