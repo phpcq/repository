@@ -12,3 +12,4 @@ repositories:
       - phpcq/plugin-phpunit
       - phpcq/plugin-psalm
       - phpcq/plugin-deptrac
+      - phpcq/plugin-rector
