@@ -4,7 +4,6 @@ env:
   TARGET_BRANCH: gh-pages
   TARGET_DIRECTORY: './web'
   BUILDER_DIRECTORY: './builder'
-  PHP_VERSION: '8.3'
 
 on:
   push:
@@ -21,7 +20,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ env.PHP_VERSION }}
+          php-version: '8.3'
           extensions: xdebug-2.9.8
 
       - name: Pull source
@@ -39,7 +38,7 @@ jobs:
           cache-name: composer-cache-dir
         with:
           path: ~/.cache/composer
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.PHP_VERSION }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
 
       - name: Cache vendor directory of repository-builder
         uses: actions/cache@v4
@@ -47,7 +46,7 @@ jobs:
           cache-name: repository-builder-vendor
         with:
           path: ${{ env.BUILDER_DIRECTORY }}/vendor
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.PHP_VERSION }}-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
 
