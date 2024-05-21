@@ -13,3 +13,4 @@ repositories:
       - phpcq/plugin-psalm
       - phpcq/plugin-deptrac
       - phpcq/plugin-rector
+      - phpcq/plugin-doctrine-coding-standard
