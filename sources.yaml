@@ -1,4 +1,35 @@
 repositories:
+  # static overrides for various tool releases which are incorrect in upstream.
+  overrides:
+    type: tool-static
+    tools:
+      psalm:
+        - version: 6.10.0
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.10.1
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.10.2
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.10.3
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.11.0
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+            composer:
+        - version: 6.12.0
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+
   plugin-github:
     type: plugin-github
     repositories:
