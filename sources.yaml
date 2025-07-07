@@ -4,6 +4,35 @@ repositories:
     type: tool-static
     tools:
       psalm:
+        # For all of these see: https://github.com/vimeo/psalm/issues/11423
+        - version: 6.8.3
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.8.4
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.8.5
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.8.6
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.8.7
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.8.8
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.8.9
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
         - version: 6.9.0
           requirements:
             php:
