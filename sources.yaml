@@ -4,6 +4,30 @@ repositories:
     type: tool-static
     tools:
       psalm:
+        - version: 6.9.0
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.9.2
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.9.3
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.9.4
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.9.5
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.9.6
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
         - version: 6.10.0
           requirements:
             php:
