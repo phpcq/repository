@@ -40,12 +40,6 @@ return new class implements DiagnosticsPluginInterface {
             )
             ->isRequired()
             ->withDefaultValue([]);
-
-        $configOptionsBuilder
-            ->describeStringListOption(
-                'excluded',
-                'List of excluded paths.'
-            );
     }
 
     public function createDiagnosticTasks(
@@ -65,8 +59,7 @@ return new class implements DiagnosticsPluginInterface {
                 if ('' === ($path = trim($path))) {
                     continue;
                 }
-                $args[] = '--exclude';
-                $args[] = $path;
+                $args[] = '--exclude=' . $path;
             }
         }
 

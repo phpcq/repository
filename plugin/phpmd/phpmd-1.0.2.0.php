@@ -40,12 +40,6 @@ return new class implements DiagnosticsPluginInterface {
             )
             ->isRequired()
             ->withDefaultValue([]);
-
-        $configOptionsBuilder
-            ->describeStringListOption(
-                'excluded',
-                'List of excluded paths.'
-            );
     }
 
     public function createDiagnosticTasks(
@@ -61,16 +55,11 @@ return new class implements DiagnosticsPluginInterface {
         ];
 
         if ($config->has('excluded')) {
-            $paths = [];
             foreach ($config->getStringList('excluded') as $path) {
                 if ('' === ($path = trim($path))) {
                     continue;
                 }
-                $paths[] = $path;
-            }
-            if ($paths) {
-                $args[] = '--exclude';
-                $args[] = implode(',', $paths);
+                $args[] = '--exclude=' . $path;
             }
         }
 
@@ -87,7 +76,6 @@ return new class implements DiagnosticsPluginInterface {
         yield $environment
             ->getTaskFactory()
             ->buildRunPhar('phpmd', $args)
-            ->withoutXDebug()
             ->withWorkingDirectory($environment->getProjectConfiguration()->getProjectRootPath())
             ->withOutputTransformer(
                 $this->createOutputTransformer($xmlfile, $environment->getProjectConfiguration()->getProjectRootPath())
