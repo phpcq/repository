@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationBuilderInterface;
 use Phpcq\PluginApi\Version10\Configuration\PluginConfigurationInterface;
 use Phpcq\PluginApi\Version10\DiagnosticsPluginInterface;
@@ -43,6 +45,16 @@ return new class implements DiagnosticsPluginInterface {
             )
             ->isRequired()
             ->withDefaultValue(false);
+        $configOptionsBuilder
+            ->describeStringListOption(
+                'excluded',
+                'List of excluded paths.'
+            );
+        $configOptionsBuilder
+            ->describeStringListOption(
+                'excluded_sniffs',
+                'List of excluded sniffs.'
+            );
     }
 
     public function createDiagnosticTasks(
@@ -82,8 +94,16 @@ return new class implements DiagnosticsPluginInterface {
             $arguments[] = '--standard=' . $config->getString('standard');
         }
 
-        if ([] !== ($excluded = $config->getStringList('excluded'))) {
-            $arguments[] = '--exclude=' . implode(',', $excluded);
+        if ($config->has('excluded')) {
+            if ([] !== ($excluded = $config->getStringList('excluded'))) {
+                $arguments[] = '--ignore=' . implode(',', $excluded);
+            }
+        }
+
+        if ($config->has('excluded_sniffs')) {
+            if ([] !== ($excluded = $config->getStringList('excluded_sniffs'))) {
+                $arguments[] = '--exclude=' . implode(',', $excluded);
+            }
         }
 
         if ($config->has('custom_flags')) {
