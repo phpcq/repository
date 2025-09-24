@@ -5,6 +5,14 @@ repositories:
     tools:
       psalm:
         # For all of these see: https://github.com/vimeo/psalm/issues/11423
+        - version: 6.8.0
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.8.1
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
         - version: 6.8.3
           requirements:
             php:
