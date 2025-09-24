@@ -13,6 +13,10 @@ repositories:
           requirements:
             php:
               php: ~8.2.27 || ~8.3.16 || ~8.4.3
+        - version: 6.8.2
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3
         - version: 6.8.3
           requirements:
             php:
