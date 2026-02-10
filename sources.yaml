@@ -126,6 +126,10 @@ repositories:
           requirements:
             php:
               php: ~8.2.27 || ~8.3.16 || ~8.4.3 || ~8.5.0
+        - version: 6.15.1
+          requirements:
+            php:
+              php: ~8.2.27 || ~8.3.16 || ~8.4.3 || ~8.5.0
 
   plugin-github:
     type: plugin-github
