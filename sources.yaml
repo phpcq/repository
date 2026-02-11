@@ -130,7 +130,19 @@ repositories:
           requirements:
             php:
               php: ~8.2.27 || ~8.3.16 || ~8.4.3 || ~8.5.0
-
+      phpunit:
+        - version: 9.5.15
+          requirements:
+            php:
+              php: ">=7.3"
+        - version: 11.5.53
+          requirements:
+            php:
+              php: ">=8.2"
+        - version: 12.5.11
+          requirements:
+            php:
+              php: ">=8.3"
   plugin-github:
     type: plugin-github
     repositories:
